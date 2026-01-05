@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Proyectos - EceAce</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn-new { background-color: #28a745; color: white; text-decoration: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+        .btn-new:hover { background-color: #218838; }
+
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        
+        .btn-open { background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; text-decoration: none; font-size: 14px; }
+        .btn-open:hover { background-color: #0056b3; }
+
+        /* Botón Eliminar Rojo */
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 14px; margin-left: 5px; }
+        .btn-delete:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📂 Historial de Cotizaciones</h1>
+        <div>
+            <a href="index.html" style="margin-right: 15px; color: #555; text-decoration: none;">Ir a Inventario</a>
+            <a href="cotizador.html" class="btn-new">＋ Nuevo Proyecto</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <table id="tabla-proyectos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Proyecto</th>
+                    <th>Cliente</th>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = ''; 
+
+        async function cargarHistorial() {
+            try {
+                const res = await fetch(`${API_URL}/todas-las-cotizaciones`);
+                const proyectos = await res.json();
+                
+                const tbody = document.querySelector('#tabla-proyectos tbody');
+                tbody.innerHTML = ''; 
+
+                if(proyectos.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">No hay proyectos guardados aún.</td></tr>';
+                    return;
+                }
+
+                proyectos.forEach(p => {
+                    const fecha = new Date(p.fecha || Date.now()).toLocaleDateString('es-CL');
+                    
+                    const fila = `
+                        <tr>
+                            <td>#${p.id}</td>
+                            <td><b>${p.nombre_proyecto}</b></td>
+                            <td>${p.cliente || '-'}</td>
+                            <td>${fecha}</td>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <a href="cotizador.html?id=${p.id}" class="btn-open">📂 Abrir</a>
+                                    <button class="btn-delete" onclick="eliminarProyecto(${p.id})">🗑️</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += fila;
+                });
+            } catch (error) {
+                console.error("Error cargando historial:", error);
+            }
+        }
+
+        // FUNCIÓN NUEVA: Borrar Proyecto
+        async function eliminarProyecto(id) {
+            // Preguntar primero para no borrar por error
+            if(!confirm("⚠️ ¿Estás seguro de que quieres eliminar este proyecto?\n\nEsta acción borrará el proyecto y su lista de materiales. No se puede deshacer.")) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/cotizaciones/${id}`, { method: 'DELETE' });
+                
+                if(res.ok) {
+                    alert("🗑️ Proyecto eliminado correctamente.");
+                    cargarHistorial(); // Recargar la tabla
+                } else {
+                    alert("Hubo un error al intentar eliminar.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error de conexión.");
+            }
+        }
+
+        // Cargar al iniciar la página
+        cargarHistorial();
+    </script>
+
+</body>
+</html>

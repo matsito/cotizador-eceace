@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Materiales - EceAce</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
+        
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .nav-buttons { display: flex; gap: 15px; align-items: center; }
+        
+        .btn-cotizar { background-color: #007bff; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
+        .btn-cotizar:hover { background-color: #0056b3; transform: translateY(-2px); }
+        .link-historial { color: #555; text-decoration: none; font-weight: bold; }
+        .link-historial:hover { color: #007bff; }
+        h1, h2 { color: #333; margin: 0; }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        
+        input, select { width: 95%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        
+        button.save-btn { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; width: 100%; }
+        button.save-btn:hover { background-color: #218838; }
+
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        tr:hover { background-color: #f1f1f1; }
+        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
+        .btn-delete:hover { background-color: #c82333; }
+
+        /* Estilo para Carga Masiva */
+        .excel-box { background: #e8f5e9; padding: 15px; border: 1px dashed #28a745; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+        .btn-excel { background-color: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-excel:hover { background-color: #138496; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-header">
+        <h1>📦 Inventario de Materiales</h1>
+        <div class="nav-buttons">
+            <a href="historial.html" class="link-historial">📂 Ver Historial</a>
+            <a href="cotizador.html" class="btn-cotizar">📝 Cotizar Proyecto</a>
+        </div>
+    </div>
+
+    <div class="excel-box">
+        <div>
+            <h3>📤 Importar Excel Masivo</h3>
+            <p style="margin: 5px 0 0; font-size: 0.9em; color: #555;">Sube un archivo .xlsx para agregar materiales rápido.</p>
+            <small>Columnas requeridas: <i>nombre, marca, codigo_1, codigo_2, unidad, valor_int, valor_normal</i></small>
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="file" id="fileExcel" accept=".xlsx, .xls" style="width: auto;">
+            <button class="btn-excel" onclick="subirExcel()">Subir Archivo</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Agregar Nuevo Material (Manual)</h2>
+        <form id="formProducto">
+            <div class="form-grid">
+                <div class="full-width">
+                    <label>Descripción (Nombre del producto)</label>
+                    <input type="text" id="nombre" placeholder="Ej: Interruptor Automático 4x500A" required>
+                </div>
+                <div><label>Marca</label><input type="text" id="marca" placeholder="Ej: Legrand"></div>
+                <div><label>Código Interno</label><input type="text" id="codigo_1" placeholder="Ej: 422008"></div>
+                <div><label>Código Proveedor</label><input type="text" id="codigo_2" placeholder="Ej: SCH-999"></div>
+                <div>
+                    <label>Unidad</label>
+                    <select id="unidad">
+                        <option value="C/u">C/u</option>
+                        <option value="GL">GL</option>
+                        <option value="m">m</option>
+                        <option value="tira">Tira</option>
+                        <option value="caja">Caja</option>
+                    </select>
+                </div>
+                <div><label>Valor Convenio (Costo)</label><input type="number" id="valor_int" placeholder="0" required></div>
+                <div><label>Valor Normal (Mercado)</label><input type="number" id="valor_normal" placeholder="0"></div>
+            </div>
+            <button type="submit" class="save-btn">💾 Guardar Material</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Listado de Materiales</h2>
+        <table id="tablaMateriales">
+            <thead>
+                <tr>
+                    <th>Descripción</th>
+                    <th>Marca</th>
+                    <th>Unidad</th>
+                    <th>Cód. 1</th>
+                    <th>Valor Int (Costo)</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = ''; 
+
+        // 1. Cargar materiales
+        async function cargarMateriales() {
+            try {
+                const respuesta = await fetch(`${API_URL}/materiales`);
+                const materiales = await respuesta.json();
+                const tbody = document.querySelector('#tablaMateriales tbody');
+                tbody.innerHTML = ''; 
+                materiales.forEach(m => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>${m.nombre}</b></td>
+                            <td>${m.marca || '-'}</td>
+                            <td>${m.unidad}</td>
+                            <td>${m.codigo_1 || '-'}</td>
+                            <td style="color: green; font-weight: bold;">$ ${parseFloat(m.valor_int).toLocaleString('es-CL')}</td>
+                            <td><button class="btn-delete" onclick="eliminarProducto(${m.id})">🗑️</button></td>
+                        </tr>
+                    `;
+                });
+            } catch (error) { console.error("Error conectando al servidor"); }
+        }
+
+        // 2. Guardar Manual
+        document.getElementById('formProducto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById('nombre').value,
+                marca: document.getElementById('marca').value,
+                codigo_1: document.getElementById('codigo_1').value,
+                codigo_2: document.getElementById('codigo_2').value,
+                unidad: document.getElementById('unidad').value,
+                valor_int: document.getElementById('valor_int').value,
+                valor_normal: document.getElementById('valor_normal').value
+            };
+            await fetch(`${API_URL}/materiales`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+            document.getElementById('formProducto').reset();
+            cargarMateriales();
+            alert('✅ ¡Material guardado!');
+        });
+
+        // 3. Subir Excel (FUNCIÓN NUEVA)
+        async function subirExcel() {
+            const fileInput = document.getElementById('fileExcel');
+            if(fileInput.files.length === 0) return alert("Selecciona un archivo Excel primero");
+
+            const formData = new FormData();
+            formData.append('archivoExcel', fileInput.files[0]);
+
+            try {
+                const res = await fetch(`${API_URL}/importar-excel`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    alert(data.mensaje);
+                    cargarMateriales(); // Recargar tabla
+                    fileInput.value = ""; // Limpiar input
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (e) {
+                alert("Error subiendo el archivo");
+                console.error(e);
+            }
+        }
+
+        // 4. Eliminar
+        async function eliminarProducto(id) {
+            if(!confirm("¿Eliminar este producto?")) return;
+            const res = await fetch(`${API_URL}/materiales/${id}`, { method: 'DELETE' });
+            if(res.ok) cargarMateriales();
+            else alert("No se pudo eliminar (quizás está en uso)");
+        }
+
+        cargarMateriales();
+    </script>
+</body>
+</html>

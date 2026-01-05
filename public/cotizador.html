@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador PRO - EceAce</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background-color: #f0f2f5; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        h1, h2, h3 { color: #1a1a1a; margin-top: 0; }
+        
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; font-size: 0.9em; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        
+        button { background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; font-size: 16px; width: 100%; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .btn-delete { background-color: #dc3545; padding: 5px 10px; font-size: 14px; width: auto; }
+        .btn-delete:hover { background-color: #c82333; }
+
+        .tabla-resumen { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .tabla-resumen th, .tabla-resumen td { padding: 10px; border-bottom: 1px solid #eee; text-align: right; }
+        .tabla-resumen th { text-align: left; background-color: #f8f9fa; }
+        .ganancia { color: #28a745; font-size: 1.2em; }
+        .hidden { display: none; }
+        
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .nav-link { text-decoration: none; color: #007bff; font-weight: bold; margin-left: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-header">
+        <h1>⚡ Cotizador de Proyectos</h1>
+        <div>
+            <a href="index.html" class="nav-link">📦 Inventario</a>
+            <a href="historial.html" class="nav-link">📂 Historial</a>
+        </div>
+    </div>
+
+    <div class="card" id="card-proyecto">
+        <h2>1. Configuración del Proyecto</h2>
+        <div class="grid-2">
+            <div>
+                <label>Nombre del Proyecto</label>
+                <input type="text" id="nombre_proyecto" placeholder="Ej: Tablero Sala Eléctrica A">
+            </div>
+            <div>
+                <label>Cliente</label>
+                <input type="text" id="cliente" placeholder="Ej: Minera Escondida">
+            </div>
+        </div>
+        <br>
+        <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ffeeba;">
+            <label style="color: #856404;">⚙️ Configuración de Porcentajes (%)</label>
+            <div class="grid-3">
+                <div><label>Margen Materiales %</label><input type="number" id="margen_mat" value="18"></div>
+                <div><label>Margen Mano Obra %</label><input type="number" id="margen_mo" value="25"></div>
+                <div><label>Gastos Generales %</label><input type="number" id="margen_gg" value="20"></div>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div><label>Valor Día (Mano de Obra)</label><input type="number" id="valor_dia_mo" value="44113"></div>
+            <div><label>Días de Trabajo</label><input type="number" id="dias" placeholder="0"></div>
+            <div><label>Cantidad Personas</label><input type="number" id="personas" placeholder="0"></div>
+        </div>
+        <br>
+        <button id="btn-crear" onclick="crearProyecto()">🚀 Crear Proyecto e Iniciar Cotización</button>
+    </div>
+
+    <div class="card hidden" id="card-items">
+        <h2>2. Materiales del Proyecto</h2>
+        <div class="grid-3">
+            <div style="grid-column: span 2;">
+                <label>Seleccionar Producto</label>
+                <select id="select-productos">
+                    <option value="">Cargando productos...</option>
+                </select>
+            </div>
+            <div>
+                <label>Cantidad</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="number" id="cantidad-item" value="1" style="width: 70%;">
+                    <button onclick="agregarItem()" style="width: 30%; background-color: #28a745;">+</button>
+                </div>
+            </div>
+        </div>
+        
+        <table class="tabla-resumen" style="margin-top: 10px;">
+            <thead>
+                <tr>
+                    <th style="text-align: left;">Item</th>
+                    <th>Cant.</th>
+                    <th>Costo Unit.</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="lista-items"></tbody>
+        </table>
+    </div>
+
+    <div class="card hidden" id="card-resumen">
+        <h2>3. Análisis Financiero</h2>
+        <table class="tabla-resumen">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Costo Real</th>
+                    <th>Venta (GG inc.)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Materiales</td>
+                    <td id="costo-mat">$ 0</td>
+                    <td id="venta-mat">$ 0</td>
+                </tr>
+                <tr>
+                    <td>Mano de Obra</td>
+                    <td id="costo-mo">$ 0</td>
+                    <td id="venta-mo">$ 0</td>
+                </tr>
+                <tr class="total-row">
+                    <td>TOTAL NETO</td>
+                    <td>-</td>
+                    <td id="total-neto">$ 0</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div style="margin-top: 20px; text-align: center; padding: 15px; background: #e6fffa; border: 1px solid #28a745; border-radius: 8px;">
+            <span style="font-size: 1.1em; color: #555;">Utilidad Real (Ganancia Líquida):</span><br>
+            <b class="ganancia" id="utilidad-real">$ 0</b>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '';
+        let PROYECTO_ID = null;
+        let PRODUCTOS_CACHE = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            await cargarProductos();
+            const urlParams = new URLSearchParams(window.location.search);
+            const idURL = urlParams.get('id');
+            if (idURL) cargarProyectoExistente(idURL);
+        });
+
+        async function cargarProductos() {
+            try {
+                const res = await fetch(`${API_URL}/materiales`);
+                PRODUCTOS_CACHE = await res.json();
+                const select = document.getElementById('select-productos');
+                select.innerHTML = '<option value="">-- Selecciona un Material --</option>';
+                PRODUCTOS_CACHE.forEach(p => {
+                    const precio = parseFloat(p.valor_int).toLocaleString('es-CL');
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.text = `${p.nombre} (${p.marca || ''})`;
+                    select.appendChild(option);
+                });
+            } catch (e) { console.error("Error productos"); }
+        }
+
+        async function crearProyecto() {
+            const datos = {
+                nombre_proyecto: document.getElementById('nombre_proyecto').value,
+                cliente: document.getElementById('cliente').value,
+                valor_dia_mo: document.getElementById('valor_dia_mo').value,
+                dias: document.getElementById('dias').value,
+                personas: document.getElementById('personas').value,
+                margen_mat: document.getElementById('margen_mat').value,
+                margen_mo: document.getElementById('margen_mo').value,
+                margen_gg: document.getElementById('margen_gg').value
+            };
+
+            if(!datos.nombre_proyecto || !datos.dias) return alert("Falta nombre o días");
+
+            try {
+                const res = await fetch(`${API_URL}/cotizaciones`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(datos)
+                });
+                const respuesta = await res.json();
+                PROYECTO_ID = respuesta.id;
+                activarPantalla(true);
+                alert('✅ Proyecto configurado. ¡Agrega materiales!');
+                recargarTodo();
+            } catch (e) { alert("Error creando proyecto"); }
+        }
+
+        async function cargarProyectoExistente(id) {
+            try {
+                const res = await fetch(`${API_URL}/cotizaciones/${id}`);
+                const data = await res.json();
+                if (data.error) return alert("No existe el proyecto");
+
+                PROYECTO_ID = id;
+                document.getElementById('nombre_proyecto').value = data.proyecto.nombre_proyecto;
+                document.getElementById('cliente').value = data.proyecto.cliente || '';
+                document.getElementById('valor_dia_mo').value = data.proyecto.valor_dia_mo;
+                document.getElementById('dias').value = data.proyecto.dias_trabajados;
+                document.getElementById('personas').value = data.proyecto.cantidad_personas;
+                document.getElementById('margen_mat').value = data.resumen.margenes.mat;
+                document.getElementById('margen_mo').value = data.resumen.margenes.mo;
+                document.getElementById('margen_gg').value = data.resumen.margenes.gg;
+
+                activarPantalla(false);
+                actualizarResumenVisual(data);
+            } catch (e) { console.error(e); }
+        }
+
+        async function agregarItem() {
+            const materialId = document.getElementById('select-productos').value;
+            const cantidad = document.getElementById('cantidad-item').value;
+            const producto = PRODUCTOS_CACHE.find(p => p.id == materialId);
+            
+            if(!producto) return alert("Selecciona un producto");
+
+            await fetch(`${API_URL}/cotizaciones/${PROYECTO_ID}/items`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ material_id: materialId, cantidad: cantidad, precio_congelado: producto.valor_int })
+            });
+            recargarTodo();
+        }
+
+        async function eliminarItem(idItem) {
+            if(!confirm("¿Borrar esta línea?")) return;
+            await fetch(`${API_URL}/items/${idItem}`, { method: 'DELETE' });
+            recargarTodo();
+        }
+
+        async function recargarTodo() {
+            if (!PROYECTO_ID) return;
+            const res = await fetch(`${API_URL}/cotizaciones/${PROYECTO_ID}`);
+            const data = await res.json();
+            actualizarResumenVisual(data);
+        }
+
+        function activarPantalla(esNuevo) {
+            document.getElementById('card-items').classList.remove('hidden');
+            document.getElementById('card-resumen').classList.remove('hidden');
+            const btn = document.getElementById('btn-crear');
+            btn.innerText = esNuevo ? "✅ Proyecto Guardado" : "✅ Proyecto Cargado";
+            btn.disabled = true;
+            btn.style.background = "#6c757d";
+            const inputs = document.querySelectorAll('#card-proyecto input');
+            inputs.forEach(i => i.disabled = true);
+        }
+
+        function actualizarResumenVisual(data) {
+            const tbody = document.getElementById('lista-items');
+            tbody.innerHTML = '';
+            data.items.forEach(i => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="text-align: left;">${i.nombre} <small style='color:#777;'>(${i.marca || 'S/M'})</small></td>
+                        <td><b>${i.cantidad}</b></td>
+                        <td>$ ${parseInt(i.precio_congelado).toLocaleString('es-CL')}</td>
+                        <td>$ ${(i.precio_congelado * i.cantidad).toLocaleString('es-CL')}</td>
+                        <td><button class="btn-delete" onclick="eliminarItem(${i.id})">🗑️</button></td>
+                    </tr>
+                `;
+            });
+
+            const fmt = (num) => '$ ' + parseInt(num).toLocaleString('es-CL');
+            document.getElementById('costo-mat').innerText = fmt(data.resumen.costo_materiales);
+            document.getElementById('costo-mo').innerText = fmt(data.resumen.costo_mo);
+            document.getElementById('venta-mat').innerText = fmt(data.resumen.venta_materiales);
+            document.getElementById('venta-mo').innerText = fmt(data.resumen.venta_mo);
+            document.getElementById('total-neto').innerText = fmt(data.resumen.total_neto);
+            document.getElementById('utilidad-real').innerText = fmt(data.resumen.utilidad_real);
+        }
+    </script>
+</body>
+</html>
