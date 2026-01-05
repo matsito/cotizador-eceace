@@ -1,323 +1,107 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador EceAce - Nube</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body { background-color: #f4f6f9; }
-        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
-        .list-group-item { cursor: pointer; transition: background 0.2s; }
-        .list-group-item:hover { background-color: #f8f9fa; }
-        .total-box { background-color: #2c3e50; color: white; padding: 15px; border-radius: 8px; }
-    </style>
-</head>
-<body>
+const express = require('express');
+const { Pool } = require('pg');
+const cors = require('cors');
+const multer = require('multer');
+const xlsx = require('xlsx');
+const path = require('path');
 
-<nav class="navbar navbar-dark bg-primary mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="#"><i class="fas fa-bolt me-2"></i>Cotizador EceAce Web</a>
-    </div>
-</nav>
+const app = express();
+const port = process.env.PORT || 3000;
 
-<div class="container">
-    
-    <div class="card mb-4">
-        <div class="card-header bg-white">
-            <h5 class="mb-0 text-primary"><i class="fas fa-file-contract me-2"></i>Datos del Proyecto</h5>
-        </div>
-        <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-4">
-                    <label class="form-label">Nombre Proyecto</label>
-                    <input type="text" id="nombreProyecto" class="form-control" placeholder="Ej: Tablero Principal">
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Cliente</label>
-                    <input type="text" id="cliente" class="form-control" placeholder="Ej: Celulosa Arauco">
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button class="btn btn-success w-100" onclick="crearProyecto()">
-                        <i class="fas fa-save me-2"></i>Crear Proyecto
-                    </button>
-                </div>
-            </div>
-            
-            <div class="row g-3 mt-2">
-                <div class="col-md-3">
-                    <label class="form-label">Valor Día M.O.</label>
-                    <input type="number" id="valorDia" class="form-control" value="80000" onchange="calcularTotales()">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Días Trab.</label>
-                    <input type="number" id="diasTrab" class="form-control" value="1" onchange="calcularTotales()">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">N° Personas</label>
-                    <input type="number" id="cantPersonas" class="form-control" value="1" onchange="calcularTotales()">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Margen General %</label>
-                    <input type="number" id="margenGeneral" class="form-control" value="30" onchange="calcularTotales()">
-                </div>
-            </div>
-        </div>
-    </div>
+// Configuración de la Base de Datos (Render)
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+});
 
-    <div class="card mb-4 border-warning">
-        <div class="card-header bg-warning bg-opacity-10">
-            <h6 class="mb-0 text-dark"><i class="fas fa-file-excel me-2"></i>Gestión de Inventario (Excel)</h6>
-        </div>
-        <div class="card-body d-flex gap-2">
-            <input type="file" id="archivoExcel" class="form-control" accept=".xlsx, .xls">
-            <button class="btn btn-warning text-dark" onclick="subirExcel()">
-                <i class="fas fa-upload me-2"></i>Importar
-            </button>
-        </div>
-    </div>
+app.use(cors());
+app.use(express.json());
 
-    <div class="row">
-        <div class="col-md-5">
-            <div class="card h-100">
-                <div class="card-header bg-secondary text-white">
-                    <i class="fas fa-search me-2"></i>Buscar Materiales
-                </div>
-                <div class="card-body">
-                    <input type="text" id="buscador" class="form-control mb-3" placeholder="Escribe para buscar..." onkeyup="buscarMateriales()">
-                    <ul class="list-group" id="lista-materiales" style="max-height: 400px; overflow-y: auto;">
-                        <li class="list-group-item text-muted text-center">Escribe algo para buscar...</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+// Servir la página web (HTML)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-        <div class="col-md-7">
-            <div class="card h-100">
-                <div class="card-header bg-dark text-white d-flex justify-content-between">
-                    <span><i class="fas fa-list me-2"></i>Detalle Cotización</span>
-                    <span id="proyecto-activo" class="badge bg-warning text-dark">Sin Proyecto</span>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Item</th>
-                                    <th style="width: 80px;">Cant.</th>
-                                    <th>Unitario</th>
-                                    <th>Total</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabla-items">
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card-footer bg-white">
-                    <div class="row text-end">
-                        <div class="col-6"><strong>Subtotal Materiales:</strong></div>
-                        <div class="col-6" id="total-materiales">$0</div>
-                        
-                        <div class="col-6"><strong>Mano de Obra:</strong></div>
-                        <div class="col-6" id="total-mo">$0</div>
+// --- API ROUTES ---
 
-                        <div class="col-6 text-primary"><strong>+ Margen (<span id="lbl-margen">30</span>%):</strong></div>
-                        <div class="col-6 text-primary" id="total-margen">$0</div>
+// 1. Buscar Materiales
+app.get('/api/materiales', async (req, res) => {
+    try {
+        const query = req.query.q;
+        // Busca por nombre O por código
+        const result = await pool.query(
+            "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 20", 
+            [`%${query}%`]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error buscando materiales");
+    }
+});
 
-                        <div class="col-12 mt-2">
-                            <h4 class="text-success">Total Neto: <span id="gran-total">$0</span></h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+// 2. Crear Cotización
+app.post('/api/cotizaciones', async (req, res) => {
+    try {
+        const { nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general } = req.body;
+        const result = await pool.query(
+            "INSERT INTO cotizaciones (nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
+            [nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general]
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error creando cotización");
+    }
+});
 
-</div>
+// 3. Agregar Item
+app.post('/api/items', async (req, res) => {
+    try {
+        const { cotizacion_id, material_id, cantidad, precio_congelado } = req.body;
+        await pool.query(
+            "INSERT INTO items_cotizacion (cotizacion_id, material_id, cantidad, precio_congelado) VALUES ($1, $2, $3, $4)",
+            [cotizacion_id, material_id, cantidad, precio_congelado]
+        );
+        res.json({ message: "Item agregado" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error agregando item");
+    }
+});
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let cotizacionIdActual = null;
-    let itemsCotizacion = [];
+// 4. Subir Excel
+const upload = multer({ storage: multer.memoryStorage() });
+app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
+    try {
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
-    // 1. CREAR PROYECTO
-    async function crearProyecto() {
-        const nombre = document.getElementById('nombreProyecto').value;
-        const cliente = document.getElementById('cliente').value;
-        const valorDia = document.getElementById('valorDia').value;
-        const dias = document.getElementById('diasTrab').value;
-        const personas = document.getElementById('cantPersonas').value;
-        const margen = document.getElementById('margenGeneral').value;
+        let contador = 0;
+        for (const row of data) {
+            // Mapeo flexible de columnas
+            const nombre = row['nombre'] || row['Nombre'] || row['Descripcion'];
+            const precio = row['valor_int'] || row['Precio'] || row['Valor Int.'];
+            const codigo = row['codigo_1'] || row['Codigo'];
+            const unidad = row['unidad'] || row['UN.'] || 'C/u';
+            const valorNormal = row['valor_normal'] || row['Valor Normal'] || 0; // Agregado para leer valor normal
 
-        if(!nombre) return alert("Ponle nombre al proyecto");
-
-        try {
-            const res = await fetch('/api/cotizaciones', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    nombre_proyecto: nombre, 
-                    cliente, 
-                    valor_dia_mo: valorDia,
-                    dias_trabajados: dias,
-                    cantidad_personas: personas,
-                    margen_general: margen
-                })
-            });
-            const data = await res.json();
-            cotizacionIdActual = data.id;
-            
-            document.getElementById('proyecto-activo').textContent = nombre;
-            document.getElementById('proyecto-activo').className = "badge bg-success";
-            alert("✅ Proyecto creado! Ahora agrega materiales.");
-        } catch (e) {
-            console.error(e);
-            alert("Error al crear proyecto");
+            if (nombre && precio) {
+                await pool.query(
+                    "INSERT INTO materiales (nombre, unidad, codigo_1, valor_int, valor_normal) VALUES ($1, $2, $3, $4, $5)",
+                    [nombre, unidad, codigo, precio, valorNormal]
+                );
+                contador++;
+            }
         }
+        res.json({ message: `✅ ${contador} productos importados correctamente` });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error procesando Excel");
     }
+});
 
-    // 2. BUSCAR MATERIALES
-    async function buscarMateriales() {
-        const query = document.getElementById('buscador').value;
-        if(query.length < 2) return;
-
-        const res = await fetch(`/api/materiales?q=${query}`);
-        const lista = await res.json();
-        renderMateriales(lista);
-    }
-
-    // 3. MOSTRAR LISTA DE BÚSQUEDA (AQUÍ ESTÁ EL CAMBIO DE PRECIO NORMAL)
-    function renderMateriales(lista) {
-        const listaEl = document.getElementById('lista-materiales');
-        listaEl.innerHTML = '';
-
-        lista.forEach(mat => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            
-            // AGREGADO: Se muestra el Valor Normal en azulito
-            li.innerHTML = `
-                <div>
-                    <strong>${mat.nombre}</strong> <small class="text-muted">(${mat.unidad})</small><br>
-                    <small class="text-secondary">Marca: ${mat.marca || 'Genérico'}</small>
-                </div>
-                <div class="text-end">
-                    <span class="badge bg-secondary me-1">Neto: $${mat.valor_int}</span>
-                    <span class="badge bg-info text-dark me-2">Normal: $${mat.valor_normal}</span>
-                    <button class="btn btn-primary btn-sm rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            `;
-            listaEl.appendChild(li);
-        });
-    }
-
-    // 4. AGREGAR ITEM A LA TABLA
-    async function agregarItem(materialId, nombre, precio) {
-        if(!cotizacionIdActual) return alert("Primero crea el proyecto arriba 👆");
-
-        // Guardar en base de datos
-        await fetch('/api/items', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                cotizacion_id: cotizacionIdActual,
-                material_id: materialId,
-                cantidad: 1,
-                precio_congelado: precio
-            })
-        });
-
-        // Agregar visualmente
-        const item = { id: Date.now(), nombre, precio, cantidad: 1 }; // ID temporal visual
-        itemsCotizacion.push(item);
-        renderTabla();
-        calcularTotales();
-    }
-
-    // 5. RENDERIZAR TABLA DE COTIZACIÓN
-    function renderTabla() {
-        const tbody = document.getElementById('tabla-items');
-        tbody.innerHTML = '';
-
-        itemsCotizacion.forEach((item, index) => {
-            const total = item.cantidad * item.precio;
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${item.nombre}</td>
-                <td><input type="number" class="form-control form-control-sm" value="${item.cantidad}" onchange="actualizarCantidad(${index}, this.value)"></td>
-                <td>$${item.precio}</td>
-                <td>$${total}</td>
-                <td><button class="btn btn-danger btn-sm" onclick="eliminarItem(${index})"><i class="fas fa-trash"></i></button></td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function actualizarCantidad(index, cant) {
-        itemsCotizacion[index].cantidad = Number(cant);
-        renderTabla();
-        calcularTotales();
-    }
-
-    function eliminarItem(index) {
-        itemsCotizacion.splice(index, 1);
-        renderTabla();
-        calcularTotales();
-    }
-
-    // 6. CALCULADORA DE TOTALES
-    function calcularTotales() {
-        // Materiales
-        let subtotalMateriales = itemsCotizacion.reduce((sum, item) => sum + (item.cantidad * item.precio), 0);
-        
-        // Mano de Obra
-        const valorDia = Number(document.getElementById('valorDia').value) || 0;
-        const dias = Number(document.getElementById('diasTrab').value) || 0;
-        const personas = Number(document.getElementById('cantPersonas').value) || 0;
-        const costoMO = valorDia * dias * personas;
-
-        // Margen
-        const margenPorcentaje = Number(document.getElementById('margenGeneral').value) || 0;
-        const costoTotal = subtotalMateriales + costoMO;
-        const valorMargen = costoTotal * (margenPorcentaje / 100);
-
-        // Gran Total
-        const granTotal = costoTotal + valorMargen;
-
-        // Pintar en pantalla
-        document.getElementById('total-materiales').innerText = `$${subtotalMateriales.toLocaleString()}`;
-        document.getElementById('total-mo').innerText = `$${costoMO.toLocaleString()}`;
-        document.getElementById('lbl-margen').innerText = margenPorcentaje;
-        document.getElementById('total-margen').innerText = `$${valorMargen.toLocaleString()}`;
-        document.getElementById('gran-total').innerText = `$${Math.round(granTotal).toLocaleString()}`;
-    }
-
-    // 7. SUBIR EXCEL
-    async function subirExcel() {
-        const input = document.getElementById('archivoExcel');
-        if(!input.files[0]) return alert("Selecciona un archivo");
-
-        const formData = new FormData();
-        formData.append('file', input.files[0]);
-
-        try {
-            const res = await fetch('/api/upload-excel', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
-            alert(data.message);
-        } catch (error) {
-            console.error(error);
-            alert("Error al subir excel");
-        }
-    }
-</script>
-
-</body>
-</html>
+app.listen(port, () => {
+    console.log(`Servidor corriendo en el puerto ${port}`);
+});
