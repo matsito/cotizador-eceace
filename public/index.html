@@ -3,193 +3,323 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Materiales - EceAce</title>
+    <title>Cotizador EceAce - Nube</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; max-width: 1100px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
-        
-        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .nav-buttons { display: flex; gap: 15px; align-items: center; }
-        
-        .btn-cotizar { background-color: #007bff; color: white; text-decoration: none; padding: 12px 25px; border-radius: 5px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: 0.3s; }
-        .btn-cotizar:hover { background-color: #0056b3; transform: translateY(-2px); }
-        .link-historial { color: #555; text-decoration: none; font-weight: bold; }
-        .link-historial:hover { color: #007bff; }
-        h1, h2 { color: #333; margin: 0; }
-        
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .full-width { grid-column: span 2; }
-        
-        input, select { width: 95%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        
-        button.save-btn { background-color: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; width: 100%; }
-        button.save-btn:hover { background-color: #218838; }
-
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; }
-        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #007bff; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        .btn-delete { background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .btn-delete:hover { background-color: #c82333; }
-
-        /* Estilo para Carga Masiva */
-        .excel-box { background: #e8f5e9; padding: 15px; border: 1px dashed #28a745; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .btn-excel { background-color: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-excel:hover { background-color: #138496; }
+        body { background-color: #f4f6f9; }
+        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; }
+        .list-group-item { cursor: pointer; transition: background 0.2s; }
+        .list-group-item:hover { background-color: #f8f9fa; }
+        .total-box { background-color: #2c3e50; color: white; padding: 15px; border-radius: 8px; }
     </style>
 </head>
 <body>
 
-    <div class="nav-header">
-        <h1>📦 Inventario de Materiales</h1>
-        <div class="nav-buttons">
-            <a href="historial.html" class="link-historial">📂 Ver Historial</a>
-            <a href="cotizador.html" class="btn-cotizar">📝 Cotizar Proyecto</a>
-        </div>
+<nav class="navbar navbar-dark bg-primary mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#"><i class="fas fa-bolt me-2"></i>Cotizador EceAce Web</a>
     </div>
+</nav>
 
-    <div class="excel-box">
-        <div>
-            <h3>📤 Importar Excel Masivo</h3>
-            <p style="margin: 5px 0 0; font-size: 0.9em; color: #555;">Sube un archivo .xlsx para agregar materiales rápido.</p>
-            <small>Columnas requeridas: <i>nombre, marca, codigo_1, codigo_2, unidad, valor_int, valor_normal</i></small>
+<div class="container">
+    
+    <div class="card mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 text-primary"><i class="fas fa-file-contract me-2"></i>Datos del Proyecto</h5>
         </div>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="file" id="fileExcel" accept=".xlsx, .xls" style="width: auto;">
-            <button class="btn-excel" onclick="subirExcel()">Subir Archivo</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>Agregar Nuevo Material (Manual)</h2>
-        <form id="formProducto">
-            <div class="form-grid">
-                <div class="full-width">
-                    <label>Descripción (Nombre del producto)</label>
-                    <input type="text" id="nombre" placeholder="Ej: Interruptor Automático 4x500A" required>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Nombre Proyecto</label>
+                    <input type="text" id="nombreProyecto" class="form-control" placeholder="Ej: Tablero Principal">
                 </div>
-                <div><label>Marca</label><input type="text" id="marca" placeholder="Ej: Legrand"></div>
-                <div><label>Código Interno</label><input type="text" id="codigo_1" placeholder="Ej: 422008"></div>
-                <div><label>Código Proveedor</label><input type="text" id="codigo_2" placeholder="Ej: SCH-999"></div>
-                <div>
-                    <label>Unidad</label>
-                    <select id="unidad">
-                        <option value="C/u">C/u</option>
-                        <option value="GL">GL</option>
-                        <option value="m">m</option>
-                        <option value="tira">Tira</option>
-                        <option value="caja">Caja</option>
-                    </select>
+                <div class="col-md-4">
+                    <label class="form-label">Cliente</label>
+                    <input type="text" id="cliente" class="form-control" placeholder="Ej: Celulosa Arauco">
                 </div>
-                <div><label>Valor Convenio (Costo)</label><input type="number" id="valor_int" placeholder="0" required></div>
-                <div><label>Valor Normal (Mercado)</label><input type="number" id="valor_normal" placeholder="0"></div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-success w-100" onclick="crearProyecto()">
+                        <i class="fas fa-save me-2"></i>Crear Proyecto
+                    </button>
+                </div>
             </div>
-            <button type="submit" class="save-btn">💾 Guardar Material</button>
-        </form>
+            
+            <div class="row g-3 mt-2">
+                <div class="col-md-3">
+                    <label class="form-label">Valor Día M.O.</label>
+                    <input type="number" id="valorDia" class="form-control" value="80000" onchange="calcularTotales()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Días Trab.</label>
+                    <input type="number" id="diasTrab" class="form-control" value="1" onchange="calcularTotales()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">N° Personas</label>
+                    <input type="number" id="cantPersonas" class="form-control" value="1" onchange="calcularTotales()">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Margen General %</label>
+                    <input type="number" id="margenGeneral" class="form-control" value="30" onchange="calcularTotales()">
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="card">
-        <h2>Listado de Materiales</h2>
-        <table id="tablaMateriales">
-            <thead>
-                <tr>
-                    <th>Descripción</th>
-                    <th>Marca</th>
-                    <th>Unidad</th>
-                    <th>Cód. 1</th>
-                    <th>Valor Int (Costo)</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning bg-opacity-10">
+            <h6 class="mb-0 text-dark"><i class="fas fa-file-excel me-2"></i>Gestión de Inventario (Excel)</h6>
+        </div>
+        <div class="card-body d-flex gap-2">
+            <input type="file" id="archivoExcel" class="form-control" accept=".xlsx, .xls">
+            <button class="btn btn-warning text-dark" onclick="subirExcel()">
+                <i class="fas fa-upload me-2"></i>Importar
+            </button>
+        </div>
     </div>
 
-    <script>
-        const API_URL = ''; 
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <i class="fas fa-search me-2"></i>Buscar Materiales
+                </div>
+                <div class="card-body">
+                    <input type="text" id="buscador" class="form-control mb-3" placeholder="Escribe para buscar..." onkeyup="buscarMateriales()">
+                    <ul class="list-group" id="lista-materiales" style="max-height: 400px; overflow-y: auto;">
+                        <li class="list-group-item text-muted text-center">Escribe algo para buscar...</li>
+                    </ul>
+                </div>
 
-        // 1. Cargar materiales
-        async function cargarMateriales() {
-            try {
-                const respuesta = await fetch(`${API_URL}/materiales`);
-                const materiales = await respuesta.json();
-                const tbody = document.querySelector('#tablaMateriales tbody');
-                tbody.innerHTML = ''; 
-                materiales.forEach(m => {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>${m.nombre}</b></td>
-                            <td>${m.marca || '-'}</td>
-                            <td>${m.unidad}</td>
-                            <td>${m.codigo_1 || '-'}</td>
-                            <td style="color: green; font-weight: bold;">$ ${parseFloat(m.valor_int).toLocaleString('es-CL')}</td>
-                            <td><button class="btn-delete" onclick="eliminarProducto(${m.id})">🗑️</button></td>
-                        </tr>
-                    `;
-                });
-            } catch (error) { console.error("Error conectando al servidor"); }
-        }
+            </div>
+            
+        </div>
 
-        // 2. Guardar Manual
-        document.getElementById('formProducto').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const datos = {
-                nombre: document.getElementById('nombre').value,
-                marca: document.getElementById('marca').value,
-                codigo_1: document.getElementById('codigo_1').value,
-                codigo_2: document.getElementById('codigo_2').value,
-                unidad: document.getElementById('unidad').value,
-                valor_int: document.getElementById('valor_int').value,
-                valor_normal: document.getElementById('valor_normal').value
-            };
-            await fetch(`${API_URL}/materiales`, {
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between">
+                    <span><i class="fas fa-list me-2"></i>Detalle Cotización</span>
+                    <span id="proyecto-activo" class="badge bg-warning text-dark">Sin Proyecto</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th style="width: 80px;">Cant.</th>
+                                    <th>Unitario</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-items">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="row text-end">
+                        <div class="col-6"><strong>Subtotal Materiales:</strong></div>
+                        <div class="col-6" id="total-materiales">$0</div>
+                        
+                        <div class="col-6"><strong>Mano de Obra:</strong></div>
+                        <div class="col-6" id="total-mo">$0</div>
+
+                        <div class="col-6 text-primary"><strong>+ Margen (<span id="lbl-margen">30</span>%):</strong></div>
+                        <div class="col-6 text-primary" id="total-margen">$0</div>
+
+                        <div class="col-12 mt-2">
+                            <h4 class="text-success">Total Neto: <span id="gran-total">$0</span></h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let cotizacionIdActual = null;
+    let itemsCotizacion = [];
+
+    // 1. CREAR PROYECTO
+    async function crearProyecto() {
+        const nombre = document.getElementById('nombreProyecto').value;
+        const cliente = document.getElementById('cliente').value;
+        const valorDia = document.getElementById('valorDia').value;
+        const dias = document.getElementById('diasTrab').value;
+        const personas = document.getElementById('cantPersonas').value;
+        const margen = document.getElementById('margenGeneral').value;
+
+        if(!nombre) return alert("Ponle nombre al proyecto");
+
+        try {
+            const res = await fetch('/api/cotizaciones', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(datos)
+                body: JSON.stringify({ 
+                    nombre_proyecto: nombre, 
+                    cliente, 
+                    valor_dia_mo: valorDia,
+                    dias_trabajados: dias,
+                    cantidad_personas: personas,
+                    margen_general: margen
+                })
             });
-            document.getElementById('formProducto').reset();
-            cargarMateriales();
-            alert('✅ ¡Material guardado!');
+            const data = await res.json();
+            cotizacionIdActual = data.id;
+            
+            document.getElementById('proyecto-activo').textContent = nombre;
+            document.getElementById('proyecto-activo').className = "badge bg-success";
+            alert("✅ Proyecto creado! Ahora agrega materiales.");
+        } catch (e) {
+            console.error(e);
+            alert("Error al crear proyecto");
+        }
+    }
+
+    // 2. BUSCAR MATERIALES
+    async function buscarMateriales() {
+        const query = document.getElementById('buscador').value;
+        if(query.length < 2) return;
+
+        const res = await fetch(`/api/materiales?q=${query}`);
+        const lista = await res.json();
+        renderMateriales(lista);
+    }
+
+    // 3. MOSTRAR LISTA DE BÚSQUEDA (AQUÍ ESTÁ EL CAMBIO DE PRECIO NORMAL)
+    function renderMateriales(lista) {
+        const listaEl = document.getElementById('lista-materiales');
+        listaEl.innerHTML = '';
+
+        lista.forEach(mat => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            
+            // AGREGADO: Se muestra el Valor Normal en azulito
+            li.innerHTML = `
+                <div>
+                    <strong>${mat.nombre}</strong> <small class="text-muted">(${mat.unidad})</small><br>
+                    <small class="text-secondary">Marca: ${mat.marca || 'Genérico'}</small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-secondary me-1">Neto: $${mat.valor_int}</span>
+                    <span class="badge bg-info text-dark me-2">Normal: $${mat.valor_normal}</span>
+                    <button class="btn btn-primary btn-sm rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            `;
+            listaEl.appendChild(li);
+        });
+    }
+
+    // 4. AGREGAR ITEM A LA TABLA
+    async function agregarItem(materialId, nombre, precio) {
+        if(!cotizacionIdActual) return alert("Primero crea el proyecto arriba 👆");
+
+        // Guardar en base de datos
+        await fetch('/api/items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                cotizacion_id: cotizacionIdActual,
+                material_id: materialId,
+                cantidad: 1,
+                precio_congelado: precio
+            })
         });
 
-        // 3. Subir Excel (FUNCIÓN NUEVA)
-        async function subirExcel() {
-            const fileInput = document.getElementById('fileExcel');
-            if(fileInput.files.length === 0) return alert("Selecciona un archivo Excel primero");
+        // Agregar visualmente
+        const item = { id: Date.now(), nombre, precio, cantidad: 1 }; // ID temporal visual
+        itemsCotizacion.push(item);
+        renderTabla();
+        calcularTotales();
+    }
 
-            const formData = new FormData();
-            formData.append('archivoExcel', fileInput.files[0]);
+    // 5. RENDERIZAR TABLA DE COTIZACIÓN
+    function renderTabla() {
+        const tbody = document.getElementById('tabla-items');
+        tbody.innerHTML = '';
 
-            try {
-                const res = await fetch(`${API_URL}/importar-excel`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if(res.ok) {
-                    alert(data.mensaje);
-                    cargarMateriales(); // Recargar tabla
-                    fileInput.value = ""; // Limpiar input
-                } else {
-                    alert("Error: " + data.error);
-                }
-            } catch (e) {
-                alert("Error subiendo el archivo");
-                console.error(e);
-            }
+        itemsCotizacion.forEach((item, index) => {
+            const total = item.cantidad * item.precio;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.nombre}</td>
+                <td><input type="number" class="form-control form-control-sm" value="${item.cantidad}" onchange="actualizarCantidad(${index}, this.value)"></td>
+                <td>$${item.precio}</td>
+                <td>$${total}</td>
+                <td><button class="btn btn-danger btn-sm" onclick="eliminarItem(${index})"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function actualizarCantidad(index, cant) {
+        itemsCotizacion[index].cantidad = Number(cant);
+        renderTabla();
+        calcularTotales();
+    }
+
+    function eliminarItem(index) {
+        itemsCotizacion.splice(index, 1);
+        renderTabla();
+        calcularTotales();
+    }
+
+    // 6. CALCULADORA DE TOTALES
+    function calcularTotales() {
+        // Materiales
+        let subtotalMateriales = itemsCotizacion.reduce((sum, item) => sum + (item.cantidad * item.precio), 0);
+        
+        // Mano de Obra
+        const valorDia = Number(document.getElementById('valorDia').value) || 0;
+        const dias = Number(document.getElementById('diasTrab').value) || 0;
+        const personas = Number(document.getElementById('cantPersonas').value) || 0;
+        const costoMO = valorDia * dias * personas;
+
+        // Margen
+        const margenPorcentaje = Number(document.getElementById('margenGeneral').value) || 0;
+        const costoTotal = subtotalMateriales + costoMO;
+        const valorMargen = costoTotal * (margenPorcentaje / 100);
+
+        // Gran Total
+        const granTotal = costoTotal + valorMargen;
+
+        // Pintar en pantalla
+        document.getElementById('total-materiales').innerText = `$${subtotalMateriales.toLocaleString()}`;
+        document.getElementById('total-mo').innerText = `$${costoMO.toLocaleString()}`;
+        document.getElementById('lbl-margen').innerText = margenPorcentaje;
+        document.getElementById('total-margen').innerText = `$${valorMargen.toLocaleString()}`;
+        document.getElementById('gran-total').innerText = `$${Math.round(granTotal).toLocaleString()}`;
+    }
+
+    // 7. SUBIR EXCEL
+    async function subirExcel() {
+        const input = document.getElementById('archivoExcel');
+        if(!input.files[0]) return alert("Selecciona un archivo");
+
+        const formData = new FormData();
+        formData.append('file', input.files[0]);
+
+        try {
+            const res = await fetch('/api/upload-excel', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            alert(data.message);
+        } catch (error) {
+            console.error(error);
+            alert("Error al subir excel");
         }
+    }
+</script>
 
-        // 4. Eliminar
-        async function eliminarProducto(id) {
-            if(!confirm("¿Eliminar este producto?")) return;
-            const res = await fetch(`${API_URL}/materiales/${id}`, { method: 'DELETE' });
-            if(res.ok) cargarMateriales();
-            else alert("No se pudo eliminar (quizás está en uso)");
-        }
-
-        cargarMateriales();
-    </script>
 </body>
 </html>
