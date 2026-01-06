@@ -8,7 +8,7 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la Base de Datos (Render)
+// Configuración de la Base de Datos
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
@@ -17,20 +17,23 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// Servir la página web (HTML)
+// --- LA SOLUCIÓN AL "NOT FOUND" ---
+// Esto le dice al servidor: "Sirve cualquier archivo que encuentres aquí (index.html, css, etc)"
+app.use(express.static(__dirname));
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
+// ----------------------------------
 
 // --- API ROUTES ---
 
 // 1. Buscar Materiales
 app.get('/api/materiales', async (req, res) => {
     try {
-        const query = req.query.q;
-        // Busca por nombre O por código
+        const query = req.query.q || '';
         const result = await pool.query(
-            "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 20", 
+            "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 50", 
             [`%${query}%`]
         );
         res.json(result.rows);
@@ -80,12 +83,11 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
 
         let contador = 0;
         for (const row of data) {
-            // Mapeo flexible de columnas
             const nombre = row['nombre'] || row['Nombre'] || row['Descripcion'];
             const precio = row['valor_int'] || row['Precio'] || row['Valor Int.'];
             const codigo = row['codigo_1'] || row['Codigo'];
             const unidad = row['unidad'] || row['UN.'] || 'C/u';
-            const valorNormal = row['valor_normal'] || row['Valor Normal'] || 0; // Agregado para leer valor normal
+            const valorNormal = row['valor_normal'] || row['Valor Normal'] || 0;
 
             if (nombre && precio) {
                 await pool.query(
