@@ -9,7 +9,7 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración Base de Datos
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
@@ -18,8 +18,7 @@ const pool = new Pool({
 app.use(cors());
 app.use(express.json());
 
-// --- ZONA INTELIGENTE ---
-// Buscamos el HTML en la carpeta 'public' O en la raíz
+// ---RUTAS ESTÁTICAS---
 const rutaPublic = path.join(__dirname, 'public');
 const rutaRaiz = __dirname;
 
@@ -27,31 +26,33 @@ app.use(express.static(rutaPublic));
 app.use(express.static(rutaRaiz));
 
 app.get('/', (req, res) => {
+
     const archivoPublic = path.join(rutaPublic, 'index.html');
-    const archivoRaiz = path.join(rutaRaiz, 'index.html');
+
 
     if (fs.existsSync(archivoPublic)) {
         res.sendFile(archivoPublic);
-    } else if (fs.existsSync(archivoRaiz)) {
-        res.sendFile(archivoRaiz);
+
     } else {
-        res.send("<h1>⚠️ Error: No encuentro el archivo index.html ni en la raíz ni en la carpeta public.</h1>");
+        res.sendFile(path.join(rutaRaiz, 'index.html'));
     }
 });
-// ------------------------
+
 
 // --- API ROUTES ---
 
-
+// 1. OBTENER MATERIALES (Con o sin búsqueda)
 app.get('/api/materiales', async (req, res) => {
     try {
-        const query = req.query.q || '';
-        const result = await pool.query("SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 50", [`%${query}%`]);
+        const query = req.query.q || ''; 
+        // Si no hay búsqueda, trae los primeros 50 materiales por defecto
+        const sql = "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 100";
+        const result = await pool.query(sql, [`%${query}%`]);
         res.json(result.rows);
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-
+// 2. CREAR COTIZACIÓN
 app.post('/api/cotizaciones', async (req, res) => {
     try {
         const { nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general } = req.body;
@@ -63,7 +64,7 @@ app.post('/api/cotizaciones', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-
+// 3. AGREGAR ITEM
 app.post('/api/items', async (req, res) => {
     try {
         const { cotizacion_id, material_id, cantidad, precio_congelado } = req.body;
@@ -72,14 +73,38 @@ app.post('/api/items', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
+// 4. NUEVO: OBTENER HISTORIAL DE PROYECTOS
+app.get('/api/historial', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM cotizaciones ORDER BY id DESC LIMIT 20");
+        res.json(result.rows);
+    } catch (err) { console.error(err); res.status(500).send(err.message); }
+});
 
+// 5. NUEVO: CARGAR ITEMS DE UN PROYECTO GUARDADO
+app.get('/api/proyecto/:id/items', async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Traemos el item junto con el nombre del material original
+        const sql = `
+            SELECT i.*, m.nombre, m.valor_int, m.valor_normal 
+            FROM items_cotizacion i 
+            JOIN materiales m ON i.material_id = m.id 
+            WHERE i.cotizacion_id = $1
+        `;
+        const result = await pool.query(sql, [id]);
+        res.json(result.rows);
+    } catch (err) { console.error(err); res.status(500).send(err.message); }
+});
+
+// 6. SUBIR EXCEL
 const upload = multer({ storage: multer.memoryStorage() });
 app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
     try {
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
+        
 
         for (const row of data) {
 
