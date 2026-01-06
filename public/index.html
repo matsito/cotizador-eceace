@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador EceAce - Versión Completa</title>
+    <title>Cotizador EceAce - Full Control</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -15,7 +15,7 @@
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .scroll-area { max-height: 500px; overflow-y: auto; }
         .historial-row:hover { background-color: #e9ecef; }
-        .btn-action { transition: transform 0.2s; }
+        
         .btn-action:hover { transform: scale(1.1); }
     </style>
 </head>
@@ -24,32 +24,22 @@
 <nav class="navbar navbar-dark bg-primary sticky-top mb-3">
     <div class="container">
         <a class="navbar-brand fw-bold" href="#"><i class="fas fa-bolt me-2"></i>Cotizador EceAce</a>
-        <span id="badge-proyecto" class="badge bg-white text-primary rounded-pill px-3 py-2">
-            Sin Proyecto Activo
-        </span>
+        <span id="badge-proyecto" class="badge bg-white text-primary rounded-pill px-3 py-2">Sin Proyecto Activo</span>
     </div>
 </nav>
 
 <div class="container">
-    
+
     <ul class="nav nav-tabs bg-white rounded-top px-3 pt-2 shadow-sm" id="myTab" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" id="inicio-tab" data-bs-toggle="tab" data-bs-target="#inicio" type="button">
-                <i class="fas fa-home me-2"></i>Inicio e Historial
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" id="cotizador-tab" data-bs-toggle="tab" data-bs-target="#cotizador" type="button">
-                <i class="fas fa-calculator me-2"></i>Cotizador
-            </button>
-        </li>
+        <li class="nav-item"><button class="nav-link active" id="inicio-tab" data-bs-toggle="tab" data-bs-target="#inicio" type="button"><i class="fas fa-home me-2"></i>Inicio e Historial</button></li>
+        <li class="nav-item"><button class="nav-link" id="cotizador-tab" data-bs-toggle="tab" data-bs-target="#cotizador" type="button"><i class="fas fa-calculator me-2"></i>Cotizador</button></li>
     </ul>
 
     <div class="tab-content bg-white p-4 shadow-sm rounded-bottom" id="myTabContent">
 
         <div class="tab-pane fade show active" id="inicio" role="tabpanel">
             <div class="row g-4">
-                
+
                 <div class="col-md-5 border-end">
                     <h5 class="text-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Nuevo Proyecto</h5>
                     <div class="row g-2">
@@ -78,9 +68,7 @@
                     </div>
                     <div class="table-responsive border rounded scroll-area" style="height: 400px;">
                         <table class="table table-hover mb-0 align-middle">
-                            <thead class="table-light sticky-top">
-                                <tr><th>ID</th><th>Proyecto</th><th>Cliente</th><th class="text-end">Acciones</th></tr>
-                            </thead>
+                            <thead class="table-light sticky-top"><tr><th>ID</th><th>Proyecto</th><th>Cliente</th><th class="text-end">Acciones</th></tr></thead>
                             <tbody id="tabla-historial"></tbody>
                         </table>
                     </div>
@@ -99,11 +87,9 @@
                             <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
                             <input type="text" id="buscador" class="form-control" placeholder="Buscar..." onkeyup="buscarMateriales()">
                         </div>
-                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalNuevoMaterial" title="Crear Material Manual">
-                            <i class="fas fa-plus"></i> Nuevo
-                        </button>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalNuevoMaterial" title="Crear Nuevo"><i class="fas fa-plus"></i></button>
                     </div>
-                    
+
                     <ul class="list-group scroll-area" id="lista-materiales">
                         <li class="list-group-item text-center"><div class="spinner-border text-primary"></div> Cargando...</li>
                     </ul>
@@ -112,8 +98,7 @@
                 <div class="col-md-7">
                     <div class="card bg-light border">
                         <div class="card-header d-flex justify-content-between bg-dark text-white">
-                            <span><i class="fas fa-list me-2"></i>Detalle</span>
-                            <small id="fecha-proyecto">---</small>
+                            <span><i class="fas fa-list me-2"></i>Detalle</span><small id="fecha-proyecto">---</small>
                         </div>
                         <div class="card-body p-0">
                             <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
@@ -140,51 +125,25 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalNuevoMaterial" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalNuevoMaterial" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="fas fa-box-open me-2"></i>Nuevo Material</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h5 class="modal-title">Nuevo Material</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formNuevoMaterial">
-                    <div class="mb-3">
-                        <label class="form-label">Nombre del Material</label>
-                        <input type="text" class="form-control" id="nm_nombre" required placeholder="Ej: Interruptor Automático 16A">
-                    </div>
+                    <div class="mb-3"><label>Nombre</label><input type="text" class="form-control" id="nm_nombre" required></div>
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Marca</label>
-                            <input type="text" class="form-control" id="nm_marca" placeholder="Ej: Legrand">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Código</label>
-                            <input type="text" class="form-control" id="nm_codigo" placeholder="Ej: LEG-1234">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Precio Neto (Costo)</label>
-                            <input type="number" class="form-control" id="nm_valor_int" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Precio Normal (Venta)</label>
-                            <input type="number" class="form-control" id="nm_valor_normal">
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">Unidad</label>
-                            <select class="form-select" id="nm_unidad">
-                                <option value="Un.">Unidad (Un.)</option>
-                                <option value="Mts">Metros (Mts)</option>
-                                <option value="Gl">Global (Gl)</option>
-                            </select>
-                        </div>
+                        <div class="col-6"><label>Marca</label><input type="text" class="form-control" id="nm_marca"></div>
+                        <div class="col-6"><label>Código</label><input type="text" class="form-control" id="nm_codigo"></div>
+                        <div class="col-6"><label>Precio Neto</label><input type="number" class="form-control" id="nm_valor_int" required></div>
+                        <div class="col-6"><label>Precio Normal</label><input type="number" class="form-control" id="nm_valor_normal"></div>
+                        <div class="col-12"><label>Unidad</label><select class="form-select" id="nm_unidad"><option value="Un.">Un.</option><option value="Mts">Mts</option><option value="Gl">Gl</option></select></div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" onclick="guardarMaterialNuevo()">Guardar Material</button>
-            </div>
+            <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-success" onclick="guardarMaterialNuevo()">Guardar</button></div>
         </div>
     </div>
 </div>
@@ -196,12 +155,53 @@
     let proyectoData = {};
     let proyectosHistorial = [];
 
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarHistorial();
-        buscarMateriales();
-    });
+    document.addEventListener('DOMContentLoaded', () => { cargarHistorial(); buscarMateriales(); });
 
-    // --- 0. NUEVO MATERIAL MANUAL ---
+    // --- MATERIALES (BUSCAR, CREAR, BORRAR) ---
+    async function buscarMateriales() {
+        const query = document.getElementById('buscador').value;
+        const res = await fetch(`/api/materiales?q=${query}`);
+        const lista = await res.json();
+        const ul = document.getElementById('lista-materiales');
+        ul.innerHTML = '';
+        if(lista.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
+
+        lista.forEach(mat => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
+            // AGREGADO BOTON BASURA
+            li.innerHTML = `
+                <div style="flex:1">
+                    <div class="fw-bold">${mat.nombre}</div>
+                    <small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small>
+                </div>
+                <div class="text-end d-flex align-items-center gap-1">
+                    <div class="d-flex flex-column align-items-end me-2">
+                        <span class="badge badge-price-neto">N: $${mat.valor_int.toLocaleString()}</span>
+                        <span class="badge badge-price-normal">P: $${mat.valor_normal ? mat.valor_normal.toLocaleString() : '0'}</span>
+                    </div>
+                    <button class="btn btn-sm btn-primary rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})" title="Agregar"><i class="fas fa-plus"></i></button>
+                    <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="eliminarMaterial(${mat.id})" title="Borrar del Catálogo"><i class="fas fa-trash"></i></button>
+                </div>
+            `;
+            ul.appendChild(li);
+        });
+    }
+
+    async function eliminarMaterial(id) {
+        if(!confirm("⚠️ ¿Estás seguro de borrar este material del catálogo?\nEsta acción es permanente.")) return;
+        try {
+            const res = await fetch(`/api/materiales/${id}`, { method: 'DELETE' });
+            if(res.ok) {
+                buscarMateriales(); // Recargar lista
+            } else {
+                const txt = await res.text();
+                alert(txt); // Mostrar mensaje de error (ej: está en uso)
+            }
+        } catch(e) { alert("Error de conexión"); }
+    }
+
     async function guardarMaterialNuevo() {
         const nombre = document.getElementById('nm_nombre').value;
         const marca = document.getElementById('nm_marca').value;
@@ -209,240 +209,98 @@
         const valor_int = document.getElementById('nm_valor_int').value;
         const valor_normal = document.getElementById('nm_valor_normal').value;
         const unidad = document.getElementById('nm_unidad').value;
-
-        if(!nombre || !valor_int) return alert("Debes poner al menos el Nombre y el Precio Neto");
+        if(!nombre || !valor_int) return alert("Falta Nombre o Precio");
 
         try {
             const res = await fetch('/api/materiales/nuevo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ nombre, marca, codigo, unidad, valor_int, valor_normal })
             });
-            const data = await res.json();
-            
+
+
             if(res.ok) {
-                alert(data.message);
-                // Cerrar modal
-                const modalEl = document.getElementById('modalNuevoMaterial');
-                const modal = bootstrap.Modal.getInstance(modalEl);
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalNuevoMaterial'));
                 modal.hide();
-                
-                // Limpiar formulario
+
                 document.getElementById('formNuevoMaterial').reset();
-                
-                // Recargar lista para que aparezca el nuevo
+
+
                 buscarMateriales();
-            } else {
-                alert("Error: " + data.message);
-            }
-        } catch (e) {
-            console.error(e);
-            alert("Error de conexión al guardar material");
-        }
+                alert("✅ Material Guardado");
+            } else alert("Error al guardar");
+        } catch (e) { alert("Error de conexión"); }
     }
 
-    // --- 1. HISTORIAL ---
+    // --- COTIZACION ---
+    async function agregarItem(matId, nombre, precio) {
+        if(!cotizacionIdActual) return alert("Selecciona un proyecto en la pestaña Inicio");
+        await fetch('/api/items', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: matId, cantidad: 1, precio_congelado: precio }) });
+        itemsCotizacion.push({ nombre, precio, cantidad: 1 }); renderTabla(); calcularTotales();
+    }
+
+    // --- HISTORIAL ---
     async function cargarHistorial() {
-        try {
-            const res = await fetch('/api/historial');
-            proyectosHistorial = await res.json();
-            const tbody = document.getElementById('tabla-historial');
-            tbody.innerHTML = '';
-
-            proyectosHistorial.forEach(p => {
-                const tr = document.createElement('tr');
-                tr.className = 'historial-row';
-
-                tr.innerHTML = `
+        const res = await fetch('/api/historial'); proyectosHistorial = await res.json();
+        const tbody = document.getElementById('tabla-historial'); tbody.innerHTML = '';
+        proyectosHistorial.forEach(p => {
+            tbody.innerHTML += `
+                <tr class="historial-row">
                     <td onclick="cargarDesdeId(${p.id})">${p.id}</td>
                     <td onclick="cargarDesdeId(${p.id})" class="fw-bold text-primary" style="cursor:pointer">${p.nombre_proyecto}</td>
                     <td onclick="cargarDesdeId(${p.id})">${p.cliente}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary btn-action me-1" onclick="cargarDesdeId(${p.id})"><i class="fas fa-folder-open"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarCotizacion(${p.id})"><i class="fas fa-trash-alt"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="cargarDesdeId(${p.id})"><i class="fas fa-folder-open"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="eliminarCotizacion(${p.id})"><i class="fas fa-trash-alt"></i></button>
                     </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } catch (e) { console.error(e); }
+                </tr>`;
+        });
+    }
+    function cargarDesdeId(id) { const p = proyectosHistorial.find(x => x.id === id); if(p) cargarProyectoExistente(p); }
+    async function eliminarCotizacion(id) { if(confirm("¿Eliminar cotización?")) { await fetch(`/api/cotizaciones/${id}`, {method:'DELETE'}); if(cotizacionIdActual===id) location.reload(); else cargarHistorial(); } }
+
+    async function cargarProyectoExistente(p) {
+        cotizacionIdActual = p.id; proyectoData = p;
+        document.getElementById('valorDia').value = p.valor_dia_mo; document.getElementById('diasTrab').value = p.dias_trabajados;
+        document.getElementById('cantPersonas').value = p.cantidad_personas; document.getElementById('margenGeneral').value = p.margen_general;
+        document.getElementById('badge-proyecto').textContent = p.nombre_proyecto; document.getElementById('badge-proyecto').className = "badge bg-success rounded-pill px-3 py-2";
+        const res = await fetch(`/api/proyecto/${p.id}/items`); const items = await res.json();
+        itemsCotizacion = items.map(i => ({ id: i.id, material_id: i.material_id, nombre: i.nombre, precio: i.precio_congelado, cantidad: Number(i.cantidad) }));
+        renderTabla(); calcularTotales(); new bootstrap.Tab(document.querySelector('#cotizador-tab')).show();
     }
 
 
-    function cargarDesdeId(id) {
-        const proyecto = proyectosHistorial.find(p => p.id === id);
-        if(proyecto) cargarProyectoExistente(proyecto);
-    }
-
-    async function eliminarCotizacion(id) {
-        if(!confirm("⚠️ ¿Eliminar cotización?")) return;
-        try {
-            await fetch(`/api/cotizaciones/${id}`, { method: 'DELETE' });
-            if(cotizacionIdActual === id) location.reload(); 
-            else cargarHistorial();
-        } catch (e) { alert("Error al eliminar"); }
-    }
-
-    async function cargarProyectoExistente(proyecto) {
-        cotizacionIdActual = proyecto.id;
-        proyectoData = proyecto;
-
-
-        document.getElementById('valorDia').value = proyecto.valor_dia_mo;
-        document.getElementById('diasTrab').value = proyecto.dias_trabajados;
-        document.getElementById('cantPersonas').value = proyecto.cantidad_personas;
-        document.getElementById('margenGeneral').value = proyecto.margen_general;
-        document.getElementById('badge-proyecto').textContent = proyecto.nombre_proyecto;
-        document.getElementById('badge-proyecto').className = "badge bg-success rounded-pill px-3 py-2";
-
-
-        const res = await fetch(`/api/proyecto/${proyecto.id}/items`);
-        const items = await res.json();
-
-
-        itemsCotizacion = items.map(i => ({
-            id: i.id,
-            material_id: i.material_id,
-            nombre: i.nombre,
-            precio: i.precio_congelado,
-            cantidad: Number(i.cantidad)
-        }));
-
-        renderTabla();
-        calcularTotales();
-
-
-        new bootstrap.Tab(document.querySelector('#cotizador-tab')).show();
-    }
-
-    // --- 2. CREAR NUEVO ---
     async function crearProyecto() {
         const nombre = document.getElementById('nombreProyecto').value;
-        const cliente = document.getElementById('cliente').value;
-        const valorDia = document.getElementById('valorDia').value;
-        const dias = document.getElementById('diasTrab').value;
-        const personas = document.getElementById('cantPersonas').value;
-        const margen = document.getElementById('margenGeneral').value;
-
-        if(!nombre) return alert("Falta nombre del proyecto");
-
-        const res = await fetch('/api/cotizaciones', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre_proyecto: nombre, cliente, valor_dia_mo: valorDia, dias_trabajados: dias, cantidad_personas: personas, margen_general: margen })
-        });
-        const data = await res.json();
-        cargarProyectoExistente({ id: data.id, nombre_proyecto: nombre, cliente, valor_dia_mo: valorDia, dias_trabajados: dias, cantidad_personas: personas, margen_general: margen });
-        cargarHistorial();
+        if(!nombre) return alert("Falta nombre");
+        const body = { nombre_proyecto: nombre, cliente: document.getElementById('cliente').value, valor_dia_mo: document.getElementById('valorDia').value, dias_trabajados: document.getElementById('diasTrab').value, cantidad_personas: document.getElementById('cantPersonas').value, margen_general: document.getElementById('margenGeneral').value };
+        const res = await fetch('/api/cotizaciones', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json(); body.id = data.id; cargarProyectoExistente(body); cargarHistorial();
     }
 
-    // --- 3. MATERIALES ---
-    async function buscarMateriales() {
-
-        const query = document.getElementById('buscador').value;
-
-
-        const res = await fetch(`/api/materiales?q=${query}`);
-
-
-        const lista = await res.json();
-
-        const ul = document.getElementById('lista-materiales');
-        ul.innerHTML = '';
-        
-        if(lista.length === 0) {
-            ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>';
-            return;
-        }
-
-        lista.forEach(mat => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            // MOSTRAR MARCA SI EXISTE
-            const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
-            li.innerHTML = `
-                <div>
-                    <div class="fw-bold">${mat.nombre}</div>
-                    <small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small>
-                </div>
-                <div class="text-end">
-                    <span class="badge badge-price-neto">N: $${mat.valor_int.toLocaleString()}</span>
-                    <span class="badge badge-price-normal">P: $${mat.valor_normal ? mat.valor_normal.toLocaleString() : '0'}</span>
-                    <button class="btn btn-sm btn-primary ms-2 rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})"><i class="fas fa-plus"></i></button>
-                </div>
-            `;
-            ul.appendChild(li);
-        });
-    }
-
-
-    async function agregarItem(materialId, nombre, precio) {
-        if(!cotizacionIdActual) return alert("Crea o selecciona un proyecto primero (Pestaña Inicio)");
-
-        await fetch('/api/items', {
-
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: materialId, cantidad: 1, precio_congelado: precio })
-        });
-
-
-        itemsCotizacion.push({ nombre, precio, cantidad: 1 });
-        renderTabla();
-        calcularTotales();
-
-    }
-
-    // --- 4. CALCULOS ---
+    // --- CALCULOS ---
     function renderTabla() {
-        const tbody = document.getElementById('tabla-items');
-        tbody.innerHTML = '';
+        const tbody = document.getElementById('tabla-items'); tbody.innerHTML = '';
         itemsCotizacion.forEach((item, i) => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${item.nombre}</td>
-                    <td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="actualizarCant(${i}, this.value)"></td>
-                    <td class="text-end">$${(item.precio * item.cantidad).toLocaleString()}</td>
-                    <td><button class="btn btn-sm text-danger" onclick="eliminar(${i})"><i class="fas fa-trash"></i></button></td>
-                </tr>
-            `;
+            tbody.innerHTML += `<tr><td>${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`;
         });
     }
-    function actualizarCant(i, val) { itemsCotizacion[i].cantidad = Number(val); renderTabla(); calcularTotales(); }
-    function eliminar(i) { itemsCotizacion.splice(i, 1); renderTabla(); calcularTotales(); }
+
     function calcularTotales() {
-        const totalMat = itemsCotizacion.reduce((a, b) => a + (b.cantidad * b.precio), 0);
-
-
-        const vDia = Number(document.getElementById('valorDia').value);
-
-        const dias = Number(document.getElementById('diasTrab').value);
-        const pers = Number(document.getElementById('cantPersonas').value);
+        const totalMat = itemsCotizacion.reduce((a,b)=>a+(b.cantidad*b.precio),0);
+        const mo = Number(document.getElementById('valorDia').value) * Number(document.getElementById('diasTrab').value) * Number(document.getElementById('cantPersonas').value);
         const marg = Number(document.getElementById('margenGeneral').value);
-
-        const totalMO = vDia * dias * pers;
-        const subtotal = totalMat + totalMO;
-        const utilidad = subtotal * (marg / 100);
-
+        const util = (totalMat + mo) * (marg/100);
         document.getElementById('total-materiales').innerText = `$${totalMat.toLocaleString()}`;
-        document.getElementById('total-mo').innerText = `$${totalMO.toLocaleString()}`;
-        document.getElementById('lbl-margen').innerText = marg;
-        document.getElementById('total-margen').innerText = `$${utilidad.toLocaleString()}`;
-        document.getElementById('gran-total').innerText = `$${Math.round(subtotal + utilidad).toLocaleString()}`;
+        document.getElementById('total-mo').innerText = `$${mo.toLocaleString()}`;
+        document.getElementById('total-margen').innerText = `$${util.toLocaleString()}`;
+        document.getElementById('gran-total').innerText = `$${Math.round(totalMat+mo+util).toLocaleString()}`;
     }
 
 
     async function subirExcel() {
-        const input = document.getElementById('archivoExcel');
-        if(!input.files[0]) return alert("Selecciona archivo");
-        const formData = new FormData();
-        formData.append('file', input.files[0]);
-
-        try {
-            const res = await fetch('/api/upload-excel', { method: 'POST', body: formData });
-            const d = await res.json();
-            alert(d.message);
-            buscarMateriales();
-        } catch(e) { alert("Error"); }
+        const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Elige archivo");
+        const fd = new FormData(); fd.append('file', f);
+        try { await fetch('/api/upload-excel', {method:'POST', body:fd}); alert("Importado"); buscarMateriales(); } catch(e){ alert("Error"); }
     }
 </script>
 
