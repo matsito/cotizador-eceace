@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador EceAce - Versión Final</title>
+    <title>Cotizador EceAce - Versión Completa</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -40,7 +40,7 @@
         </li>
         <li class="nav-item">
             <button class="nav-link" id="cotizador-tab" data-bs-toggle="tab" data-bs-target="#cotizador" type="button">
-                <i class="fas fa-calculator me-2"></i>Cotizador y Materiales
+                <i class="fas fa-calculator me-2"></i>Cotizador
             </button>
         </li>
     </ul>
@@ -53,39 +53,17 @@
                 <div class="col-md-5 border-end">
                     <h5 class="text-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Nuevo Proyecto</h5>
                     <div class="row g-2">
-                        <div class="col-12">
-                            <label class="small text-muted">Nombre Proyecto</label>
-                            <input type="text" id="nombreProyecto" class="form-control" placeholder="Ej: Tablero Principal">
-                        </div>
-                        <div class="col-12">
-                            <label class="small text-muted">Cliente</label>
-                            <input type="text" id="cliente" class="form-control" placeholder="Ej: Arauco">
-                        </div>
-                        <div class="col-6">
-                            <label class="small text-muted">Valor Día M.O.</label>
-                            <input type="number" id="valorDia" class="form-control" value="80000">
-                        </div>
-                        <div class="col-6">
-                            <label class="small text-muted">Margen %</label>
-                            <input type="number" id="margenGeneral" class="form-control" value="30">
-                        </div>
-                        <div class="col-6">
-                            <label class="small text-muted">Días</label>
-                            <input type="number" id="diasTrab" class="form-control" value="1">
-                        </div>
-                        <div class="col-6">
-                            <label class="small text-muted">Personas</label>
-                            <input type="number" id="cantPersonas" class="form-control" value="1">
-                        </div>
-                        <div class="col-12 mt-3">
-                            <button class="btn btn-success w-100 fw-bold" onclick="crearProyecto()">
-                                <i class="fas fa-save me-2"></i>Crear y Empezar
-                            </button>
-                        </div>
+                        <div class="col-12"><label class="small text-muted">Nombre Proyecto</label><input type="text" id="nombreProyecto" class="form-control" placeholder="Ej: Tablero Principal"></div>
+                        <div class="col-12"><label class="small text-muted">Cliente</label><input type="text" id="cliente" class="form-control" placeholder="Ej: Arauco"></div>
+                        <div class="col-6"><label class="small text-muted">Valor Día M.O.</label><input type="number" id="valorDia" class="form-control" value="80000"></div>
+                        <div class="col-6"><label class="small text-muted">Margen %</label><input type="number" id="margenGeneral" class="form-control" value="30"></div>
+                        <div class="col-6"><label class="small text-muted">Días</label><input type="number" id="diasTrab" class="form-control" value="1"></div>
+                        <div class="col-6"><label class="small text-muted">Personas</label><input type="number" id="cantPersonas" class="form-control" value="1"></div>
+                        <div class="col-12 mt-3"><button class="btn btn-success w-100 fw-bold" onclick="crearProyecto()"><i class="fas fa-save me-2"></i>Crear y Empezar</button></div>
                     </div>
-                    
+
                     <hr class="my-4">
-                    
+
                     <h6 class="text-warning"><i class="fas fa-file-excel me-2"></i>Importar Excel</h6>
                     <div class="input-group input-group-sm">
                         <input type="file" id="archivoExcel" class="form-control">
@@ -101,15 +79,9 @@
                     <div class="table-responsive border rounded scroll-area" style="height: 400px;">
                         <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light sticky-top">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Proyecto</th>
-                                    <th>Cliente</th>
-                                    <th class="text-end">Acciones</th>
-                                </tr>
+                                <tr><th>ID</th><th>Proyecto</th><th>Cliente</th><th class="text-end">Acciones</th></tr>
                             </thead>
-                            <tbody id="tabla-historial">
-                                </tbody>
+                            <tbody id="tabla-historial"></tbody>
                         </table>
                     </div>
                 </div>
@@ -118,13 +90,20 @@
 
         </div>
 
+
         <div class="tab-pane fade" id="cotizador" role="tabpanel">
             <div class="row">
                 <div class="col-md-5">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
-                        <input type="text" id="buscador" class="form-control" placeholder="Buscar material..." onkeyup="buscarMateriales()">
+                    <div class="d-flex gap-2 mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
+                            <input type="text" id="buscador" class="form-control" placeholder="Buscar..." onkeyup="buscarMateriales()">
+                        </div>
+                        <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalNuevoMaterial" title="Crear Material Manual">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </button>
                     </div>
+                    
                     <ul class="list-group scroll-area" id="lista-materiales">
                         <li class="list-group-item text-center"><div class="spinner-border text-primary"></div> Cargando...</li>
                     </ul>
@@ -139,29 +118,18 @@
                         <div class="card-body p-0">
                             <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
                                 <table class="table table-sm table-striped mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>Item</th>
-                                            <th width="70">Cant.</th>
-                                            <th class="text-end">Total</th>
-                                            <th width="40"></th>
-                                        </tr>
-                                    </thead>
+                                    <thead><tr><th>Item</th><th width="70">Cant.</th><th class="text-end">Total</th><th width="40"></th></tr></thead>
                                     <tbody id="tabla-items"></tbody>
                                 </table>
                             </div>
                         </div>
                         <div class="card-footer bg-white">
                             <div class="row text-end">
-                                <div class="col-6 text-muted">Materiales:</div>
-                                <div class="col-6 fw-bold" id="total-materiales">$0</div>
-                                <div class="col-6 text-muted">Mano de Obra:</div>
-                                <div class="col-6 fw-bold" id="total-mo">$0</div>
-                                <div class="col-6 text-primary">Margen (<span id="lbl-margen">30</span>%):</div>
-                                <div class="col-6 text-primary fw-bold" id="total-margen">$0</div>
+                                <div class="col-6 text-muted">Materiales:</div><div class="col-6 fw-bold" id="total-materiales">$0</div>
+                                <div class="col-6 text-muted">Mano de Obra:</div><div class="col-6 fw-bold" id="total-mo">$0</div>
+                                <div class="col-6 text-primary">Margen (<span id="lbl-margen">30</span>%):</div><div class="col-6 text-primary fw-bold" id="total-margen">$0</div>
                                 <div class="col-12"><hr></div>
-                                <div class="col-6 h5 text-success">TOTAL:</div>
-                                <div class="col-6 h5 text-success fw-bold" id="gran-total">$0</div>
+                                <div class="col-6 h5 text-success">TOTAL:</div><div class="col-6 h5 text-success fw-bold" id="gran-total">$0</div>
                             </div>
                         </div>
                     </div>
@@ -172,20 +140,108 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalNuevoMaterial" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-box-open me-2"></i>Nuevo Material</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formNuevoMaterial">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Material</label>
+                        <input type="text" class="form-control" id="nm_nombre" required placeholder="Ej: Interruptor Automático 16A">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="nm_marca" placeholder="Ej: Legrand">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Código</label>
+                            <input type="text" class="form-control" id="nm_codigo" placeholder="Ej: LEG-1234">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Precio Neto (Costo)</label>
+                            <input type="number" class="form-control" id="nm_valor_int" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Precio Normal (Venta)</label>
+                            <input type="number" class="form-control" id="nm_valor_normal">
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Unidad</label>
+                            <select class="form-select" id="nm_unidad">
+                                <option value="Un.">Unidad (Un.)</option>
+                                <option value="Mts">Metros (Mts)</option>
+                                <option value="Gl">Global (Gl)</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="guardarMaterialNuevo()">Guardar Material</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let cotizacionIdActual = null;
     let itemsCotizacion = [];
     let proyectoData = {};
-    let proyectosHistorial = []; // Guardamos la lista en memoria
+    let proyectosHistorial = [];
 
-    
     document.addEventListener('DOMContentLoaded', () => {
         cargarHistorial();
         buscarMateriales();
     });
 
-    // --- 1. HISTORIAL Y ELIMINAR ---
+    // --- 0. NUEVO MATERIAL MANUAL ---
+    async function guardarMaterialNuevo() {
+        const nombre = document.getElementById('nm_nombre').value;
+        const marca = document.getElementById('nm_marca').value;
+        const codigo = document.getElementById('nm_codigo').value;
+        const valor_int = document.getElementById('nm_valor_int').value;
+        const valor_normal = document.getElementById('nm_valor_normal').value;
+        const unidad = document.getElementById('nm_unidad').value;
+
+        if(!nombre || !valor_int) return alert("Debes poner al menos el Nombre y el Precio Neto");
+
+        try {
+            const res = await fetch('/api/materiales/nuevo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, marca, codigo, unidad, valor_int, valor_normal })
+            });
+            const data = await res.json();
+            
+            if(res.ok) {
+                alert(data.message);
+                // Cerrar modal
+                const modalEl = document.getElementById('modalNuevoMaterial');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                
+                // Limpiar formulario
+                document.getElementById('formNuevoMaterial').reset();
+                
+                // Recargar lista para que aparezca el nuevo
+                buscarMateriales();
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error de conexión al guardar material");
+        }
+    }
+
+    // --- 1. HISTORIAL ---
     async function cargarHistorial() {
         try {
             const res = await fetch('/api/historial');
@@ -196,14 +252,14 @@
             proyectosHistorial.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = 'historial-row';
-                // Solo cargamos el proyecto si hacemos click en las celdas de texto, no en el boton borrar
+
                 tr.innerHTML = `
                     <td onclick="cargarDesdeId(${p.id})">${p.id}</td>
                     <td onclick="cargarDesdeId(${p.id})" class="fw-bold text-primary" style="cursor:pointer">${p.nombre_proyecto}</td>
                     <td onclick="cargarDesdeId(${p.id})">${p.cliente}</td>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-outline-primary btn-action me-1" onclick="cargarDesdeId(${p.id})" title="Abrir"><i class="fas fa-folder-open"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarCotizacion(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                        <button class="btn btn-sm btn-outline-primary btn-action me-1" onclick="cargarDesdeId(${p.id})"><i class="fas fa-folder-open"></i></button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarCotizacion(${p.id})"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -211,34 +267,19 @@
         } catch (e) { console.error(e); }
     }
 
-    // Función auxiliar para buscar el objeto completo en memoria y cargarlo
+
     function cargarDesdeId(id) {
         const proyecto = proyectosHistorial.find(p => p.id === id);
         if(proyecto) cargarProyectoExistente(proyecto);
     }
 
     async function eliminarCotizacion(id) {
-        // Confirmación de seguridad
-        if(!confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR esta cotización?\nEsta acción no se puede deshacer.")) return;
-
+        if(!confirm("⚠️ ¿Eliminar cotización?")) return;
         try {
             await fetch(`/api/cotizaciones/${id}`, { method: 'DELETE' });
-            
-            // Si eliminamos la que estamos viendo actualmente, limpiamos la pantalla
-            if(cotizacionIdActual === id) {
-                cotizacionIdActual = null;
-                itemsCotizacion = [];
-                document.getElementById('badge-proyecto').textContent = "Sin Proyecto Activo";
-                document.getElementById('badge-proyecto').className = "badge bg-secondary rounded-pill px-3 py-2";
-                renderTabla();
-                calcularTotales();
-            }
-
-            // Recargar la lista
-            await cargarHistorial();
-        } catch (e) {
-            alert("Error al eliminar");
-        }
+            if(cotizacionIdActual === id) location.reload(); 
+            else cargarHistorial();
+        } catch (e) { alert("Error al eliminar"); }
     }
 
     async function cargarProyectoExistente(proyecto) {
@@ -290,13 +331,7 @@
             body: JSON.stringify({ nombre_proyecto: nombre, cliente, valor_dia_mo: valorDia, dias_trabajados: dias, cantidad_personas: personas, margen_general: margen })
         });
         const data = await res.json();
-        
-        cargarProyectoExistente({ 
-            id: data.id, nombre_proyecto: nombre, cliente, 
-            valor_dia_mo: valorDia, dias_trabajados: dias, 
-            cantidad_personas: personas, margen_general: margen 
-        });
-        
+        cargarProyectoExistente({ id: data.id, nombre_proyecto: nombre, cliente, valor_dia_mo: valorDia, dias_trabajados: dias, cantidad_personas: personas, margen_general: margen });
         cargarHistorial();
     }
 
@@ -322,10 +357,12 @@
         lista.forEach(mat => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            // MOSTRAR MARCA SI EXISTE
+            const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
             li.innerHTML = `
                 <div>
                     <div class="fw-bold">${mat.nombre}</div>
-                    <small class="text-muted">${mat.codigo_1 || ''} | ${mat.unidad}</small>
+                    <small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small>
                 </div>
                 <div class="text-end">
                     <span class="badge badge-price-neto">N: $${mat.valor_int.toLocaleString()}</span>
@@ -342,6 +379,7 @@
         if(!cotizacionIdActual) return alert("Crea o selecciona un proyecto primero (Pestaña Inicio)");
 
         await fetch('/api/items', {
+
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: materialId, cantidad: 1, precio_congelado: precio })
@@ -369,20 +407,8 @@
             `;
         });
     }
-
-    function actualizarCant(i, val) {
-        itemsCotizacion[i].cantidad = Number(val);
-        renderTabla();
-        calcularTotales();
-    }
-    
-    function eliminar(i) {
-        itemsCotizacion.splice(i, 1);
-        renderTabla();
-        calcularTotales();
-    }
-
-
+    function actualizarCant(i, val) { itemsCotizacion[i].cantidad = Number(val); renderTabla(); calcularTotales(); }
+    function eliminar(i) { itemsCotizacion.splice(i, 1); renderTabla(); calcularTotales(); }
     function calcularTotales() {
         const totalMat = itemsCotizacion.reduce((a, b) => a + (b.cantidad * b.precio), 0);
 
