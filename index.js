@@ -41,11 +41,11 @@ app.get('/', (req, res) => {
 
 // --- API ROUTES ---
 
-// 1. OBTENER MATERIALES (Con o sin búsqueda)
+// 1. OBTENER MATERIALES
 app.get('/api/materiales', async (req, res) => {
     try {
         const query = req.query.q || ''; 
-        // Si no hay búsqueda, trae los primeros 50 materiales por defecto
+
         const sql = "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 LIMIT 100";
         const result = await pool.query(sql, [`%${query}%`]);
         res.json(result.rows);
@@ -73,19 +73,19 @@ app.post('/api/items', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-// 4. NUEVO: OBTENER HISTORIAL DE PROYECTOS
+// 4. HISTORIAL
 app.get('/api/historial', async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM cotizaciones ORDER BY id DESC LIMIT 20");
+        const result = await pool.query("SELECT * FROM cotizaciones ORDER BY id DESC LIMIT 50");
         res.json(result.rows);
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-// 5. NUEVO: CARGAR ITEMS DE UN PROYECTO GUARDADO
+// 5. CARGAR ITEMS PROYECTO
 app.get('/api/proyecto/:id/items', async (req, res) => {
     try {
         const { id } = req.params;
-        // Traemos el item junto con el nombre del material original
+
         const sql = `
             SELECT i.*, m.nombre, m.valor_int, m.valor_normal 
             FROM items_cotizacion i 
@@ -97,14 +97,26 @@ app.get('/api/proyecto/:id/items', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-// 6. SUBIR EXCEL
+// 6. ELIMINAR COTIZACIÓN (NUEVO) 🗑️
+app.delete('/api/cotizaciones/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        // Primero borramos los items asociados para no dejar huérfanos
+        await pool.query("DELETE FROM items_cotizacion WHERE cotizacion_id = $1", [id]);
+        // Luego borramos la cabeza del proyecto
+        await pool.query("DELETE FROM cotizaciones WHERE id = $1", [id]);
+        res.json({ message: "Eliminado correctamente" });
+    } catch (err) { console.error(err); res.status(500).send(err.message); }
+});
+
+// 7. SUBIR EXCEL
 const upload = multer({ storage: multer.memoryStorage() });
 app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
     try {
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        
+
 
         for (const row of data) {
 

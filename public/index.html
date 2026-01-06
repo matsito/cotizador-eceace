@@ -14,8 +14,9 @@
         .badge-price-normal { background-color: #0dcaf0; color: #000; }
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .scroll-area { max-height: 500px; overflow-y: auto; }
-        /* Efecto hover en el historial */
-        .historial-row:hover { background-color: #e9ecef; cursor: pointer; }
+        .historial-row:hover { background-color: #e9ecef; }
+        .btn-action { transition: transform 0.2s; }
+        .btn-action:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
@@ -94,17 +95,17 @@
 
                 <div class="col-md-7">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="text-primary mb-0"><i class="fas fa-history me-2"></i>Historial de Cotizaciones</h5>
+                        <h5 class="text-primary mb-0"><i class="fas fa-history me-2"></i>Historial</h5>
                         <button class="btn btn-sm btn-outline-secondary" onclick="cargarHistorial()"><i class="fas fa-sync-alt"></i></button>
                     </div>
                     <div class="table-responsive border rounded scroll-area" style="height: 400px;">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light sticky-top">
                                 <tr>
                                     <th>ID</th>
                                     <th>Proyecto</th>
                                     <th>Cliente</th>
-                                    <th>Acción</th>
+                                    <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-historial">
@@ -176,41 +177,75 @@
     let cotizacionIdActual = null;
     let itemsCotizacion = [];
     let proyectoData = {};
+    let proyectosHistorial = []; // Guardamos la lista en memoria
 
-    // AL CARGAR LA PÁGINA
+    
     document.addEventListener('DOMContentLoaded', () => {
-        cargarHistorial();    // Cargar historial de una
-        buscarMateriales();   // Cargar materiales de una (sin buscar)
+        cargarHistorial();
+        buscarMateriales();
     });
 
-    // --- 1. GESTIÓN DEL HISTORIAL ---
+    // --- 1. HISTORIAL Y ELIMINAR ---
     async function cargarHistorial() {
         try {
             const res = await fetch('/api/historial');
-            const lista = await res.json();
+            proyectosHistorial = await res.json();
             const tbody = document.getElementById('tabla-historial');
             tbody.innerHTML = '';
 
-            lista.forEach(p => {
+            proyectosHistorial.forEach(p => {
                 const tr = document.createElement('tr');
                 tr.className = 'historial-row';
-                tr.onclick = () => cargarProyectoExistente(p);
+                // Solo cargamos el proyecto si hacemos click en las celdas de texto, no en el boton borrar
                 tr.innerHTML = `
-                    <td>${p.id}</td>
-                    <td class="fw-bold text-primary">${p.nombre_proyecto}</td>
-                    <td>${p.cliente}</td>
-                    <td><button class="btn btn-sm btn-outline-primary"><i class="fas fa-folder-open"></i></button></td>
+                    <td onclick="cargarDesdeId(${p.id})">${p.id}</td>
+                    <td onclick="cargarDesdeId(${p.id})" class="fw-bold text-primary" style="cursor:pointer">${p.nombre_proyecto}</td>
+                    <td onclick="cargarDesdeId(${p.id})">${p.cliente}</td>
+                    <td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary btn-action me-1" onclick="cargarDesdeId(${p.id})" title="Abrir"><i class="fas fa-folder-open"></i></button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="eliminarCotizacion(${p.id})" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         } catch (e) { console.error(e); }
     }
 
+    // Función auxiliar para buscar el objeto completo en memoria y cargarlo
+    function cargarDesdeId(id) {
+        const proyecto = proyectosHistorial.find(p => p.id === id);
+        if(proyecto) cargarProyectoExistente(proyecto);
+    }
+
+    async function eliminarCotizacion(id) {
+        // Confirmación de seguridad
+        if(!confirm("⚠️ ¿Estás seguro de que quieres ELIMINAR esta cotización?\nEsta acción no se puede deshacer.")) return;
+
+        try {
+            await fetch(`/api/cotizaciones/${id}`, { method: 'DELETE' });
+            
+            // Si eliminamos la que estamos viendo actualmente, limpiamos la pantalla
+            if(cotizacionIdActual === id) {
+                cotizacionIdActual = null;
+                itemsCotizacion = [];
+                document.getElementById('badge-proyecto').textContent = "Sin Proyecto Activo";
+                document.getElementById('badge-proyecto').className = "badge bg-secondary rounded-pill px-3 py-2";
+                renderTabla();
+                calcularTotales();
+            }
+
+            // Recargar la lista
+            await cargarHistorial();
+        } catch (e) {
+            alert("Error al eliminar");
+        }
+    }
+
     async function cargarProyectoExistente(proyecto) {
         cotizacionIdActual = proyecto.id;
         proyectoData = proyecto;
 
-        // Rellenar inputs
+
         document.getElementById('valorDia').value = proyecto.valor_dia_mo;
         document.getElementById('diasTrab').value = proyecto.dias_trabajados;
         document.getElementById('cantPersonas').value = proyecto.cantidad_personas;
@@ -218,23 +253,23 @@
         document.getElementById('badge-proyecto').textContent = proyecto.nombre_proyecto;
         document.getElementById('badge-proyecto').className = "badge bg-success rounded-pill px-3 py-2";
 
-        // Traer items de la BD
+
         const res = await fetch(`/api/proyecto/${proyecto.id}/items`);
         const items = await res.json();
 
-        // Convertir formato
+
         itemsCotizacion = items.map(i => ({
-            id: i.id, // ID del item en la cotizacion
+            id: i.id,
             material_id: i.material_id,
             nombre: i.nombre,
-            precio: i.precio_congelado, // Usamos el precio con el que se guardó
+            precio: i.precio_congelado,
             cantidad: Number(i.cantidad)
         }));
 
         renderTabla();
         calcularTotales();
 
-        // Cambiar a pestaña cotizador
+
         new bootstrap.Tab(document.querySelector('#cotizador-tab')).show();
     }
 
@@ -262,18 +297,20 @@
             cantidad_personas: personas, margen_general: margen 
         });
         
-        cargarHistorial(); // Actualizar lista
+        cargarHistorial();
     }
 
-    // --- 3. MATERIALES (VISIBLE SIEMPRE) ---
+    // --- 3. MATERIALES ---
     async function buscarMateriales() {
 
         const query = document.getElementById('buscador').value;
-        
+
 
         const res = await fetch(`/api/materiales?q=${query}`);
+
+
         const lista = await res.json();
-        
+
         const ul = document.getElementById('lista-materiales');
         ul.innerHTML = '';
         
@@ -310,17 +347,14 @@
             body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: materialId, cantidad: 1, precio_congelado: precio })
         });
 
-        // Agregamos visualmente (recarga rápida)
+
         itemsCotizacion.push({ nombre, precio, cantidad: 1 });
         renderTabla();
         calcularTotales();
-        
-        // Truco: Recargamos el proyecto completo para tener los IDs reales por si queremos borrar
-        const pActual = proyectoData; // guardamos ref
-        // Opcional: podríamos no recargar todo, pero es más seguro
+
     }
 
-    // --- 4. CALCULOS Y TABLA ---
+    // --- 4. CALCULOS ---
     function renderTabla() {
         const tbody = document.getElementById('tabla-items');
         tbody.innerHTML = '';
@@ -351,9 +385,10 @@
 
     function calcularTotales() {
         const totalMat = itemsCotizacion.reduce((a, b) => a + (b.cantidad * b.precio), 0);
-        
-        // Usar valores del proyecto actual o del input si cambiaron
+
+
         const vDia = Number(document.getElementById('valorDia').value);
+
         const dias = Number(document.getElementById('diasTrab').value);
         const pers = Number(document.getElementById('cantPersonas').value);
         const marg = Number(document.getElementById('margenGeneral').value);
@@ -380,7 +415,7 @@
             const res = await fetch('/api/upload-excel', { method: 'POST', body: formData });
             const d = await res.json();
             alert(d.message);
-            buscarMateriales(); // Recargar lista
+            buscarMateriales();
         } catch(e) { alert("Error"); }
     }
 </script>
