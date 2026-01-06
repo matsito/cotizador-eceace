@@ -9,7 +9,7 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de la Base de Datos
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
@@ -39,7 +39,7 @@ app.get('/', (req, res) => {
 app.get('/api/materiales', async (req, res) => {
     try {
         const query = req.query.q || ''; 
-        const sql = "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 ORDER BY id DESC LIMIT 100";
+        const sql = "SELECT * FROM materiales WHERE nombre ILIKE $1 OR codigo_1 ILIKE $1 ORDER BY id ASC LIMIT 100";
         const result = await pool.query(sql, [`%${query}%`]);
         res.json(result.rows);
     } catch (err) { console.error(err); res.status(500).send(err.message); }
@@ -94,6 +94,7 @@ app.delete('/api/cotizaciones/:id', async (req, res) => {
         await pool.query("DELETE FROM cotizaciones WHERE id = $1", [id]);
 
         res.json({ message: "Eliminado correctamente" });
+
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
@@ -140,21 +141,29 @@ app.post('/api/materiales/nuevo', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-// 9. ELIMINAR MATERIAL (NUEVO) 🗑️
+// 9. ELIMINAR MATERIAL
 app.delete('/api/materiales/:id', async (req, res) => {
     try {
         const { id } = req.params;
         await pool.query("DELETE FROM materiales WHERE id = $1", [id]);
         res.json({ message: "Material eliminado" });
     } catch (err) {
-        // Si el error es por llave foránea (código 23503), es porque está en uso
-        if (err.code === '23503') {
-            res.status(400).send("⚠️ No se puede eliminar: Este material está siendo usado en una cotización antigua.");
-        } else {
-            console.error(err);
-            res.status(500).send("Error al eliminar material");
-        }
+        if (err.code === '23503') res.status(400).send("⚠️ En uso en cotización antigua.");
+        else res.status(500).send("Error al eliminar");
     }
+});
+
+// 10. EDITAR MATERIAL (NUEVO) ✏️
+app.put('/api/materiales/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, marca, codigo, unidad, valor_int, valor_normal } = req.body;
+        await pool.query(
+            "UPDATE materiales SET nombre=$1, marca=$2, codigo_1=$3, unidad=$4, valor_int=$5, valor_normal=$6 WHERE id=$7",
+            [nombre, marca, codigo, unidad, valor_int, valor_normal, id]
+        );
+        res.json({ message: "Material actualizado" });
+    } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
 app.listen(port, () => console.log(`Server en puerto ${port}`));

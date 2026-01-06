@@ -15,7 +15,7 @@
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .scroll-area { max-height: 500px; overflow-y: auto; }
         .historial-row:hover { background-color: #e9ecef; }
-        
+
         .btn-action:hover { transform: scale(1.1); }
     </style>
 </head>
@@ -36,8 +36,8 @@
     </ul>
 
     <div class="tab-content bg-white p-4 shadow-sm rounded-bottom" id="myTabContent">
-
-        <div class="tab-pane fade show active" id="inicio" role="tabpanel">
+        <div class="tab-pane fade show active" id
+        ="inicio" role="tabpanel">
             <div class="row g-4">
 
                 <div class="col-md-5 border-end">
@@ -60,7 +60,7 @@
                         <button class="btn btn-warning" onclick="subirExcel()">Subir</button>
                     </div>
                 </div>
-
+                
                 <div class="col-md-7">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="text-primary mb-0"><i class="fas fa-history me-2"></i>Historial</h5>
@@ -123,6 +123,7 @@
         </div>
 
     </div>
+
 </div>
 
 <div class="modal fade" id="modalNuevoMaterial" tabindex="-1">
@@ -148,29 +149,57 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalEditarMaterial" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-dark"><i class="fas fa-edit me-2"></i>Editar Material</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formEditarMaterial">
+                    <input type="hidden" id="em_id"> <div class="mb-3"><label>Nombre</label><input type="text" class="form-control" id="em_nombre" required></div>
+                    <div class="row g-3">
+                        <div class="col-6"><label>Marca</label><input type="text" class="form-control" id="em_marca"></div>
+                        <div class="col-6"><label>Código</label><input type="text" class="form-control" id="em_codigo"></div>
+                        <div class="col-6"><label>Precio Neto</label><input type="number" class="form-control" id="em_valor_int" required></div>
+                        <div class="col-6"><label>Precio Normal</label><input type="number" class="form-control" id="em_valor_normal"></div>
+                        <div class="col-12"><label>Unidad</label><select class="form-select" id="em_unidad"><option value="Un.">Un.</option><option value="Mts">Mts</option><option value="Gl">Gl</option></select></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning fw-bold" onclick="guardarEdicion()">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let cotizacionIdActual = null;
     let itemsCotizacion = [];
     let proyectoData = {};
     let proyectosHistorial = [];
+    let listaMaterialesCache = []; // Para poder buscar al editar
 
     document.addEventListener('DOMContentLoaded', () => { cargarHistorial(); buscarMateriales(); });
 
-    // --- MATERIALES (BUSCAR, CREAR, BORRAR) ---
+    // --- MATERIALES (BUSCAR, CREAR, BORRAR, EDITAR) ---
     async function buscarMateriales() {
         const query = document.getElementById('buscador').value;
         const res = await fetch(`/api/materiales?q=${query}`);
-        const lista = await res.json();
+        listaMaterialesCache = await res.json(); // Guardamos en cache
         const ul = document.getElementById('lista-materiales');
         ul.innerHTML = '';
-        if(lista.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
+        if(listaMaterialesCache.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
 
-        lista.forEach(mat => {
+        listaMaterialesCache.forEach(mat => {
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
             const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
-            // AGREGADO BOTON BASURA
+
             li.innerHTML = `
                 <div style="flex:1">
                     <div class="fw-bold">${mat.nombre}</div>
@@ -182,23 +211,68 @@
                         <span class="badge badge-price-normal">P: $${mat.valor_normal ? mat.valor_normal.toLocaleString() : '0'}</span>
                     </div>
                     <button class="btn btn-sm btn-primary rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})" title="Agregar"><i class="fas fa-plus"></i></button>
-                    <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="eliminarMaterial(${mat.id})" title="Borrar del Catálogo"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-sm btn-outline-warning rounded-circle" onclick="abrirEditar(${mat.id})" title="Editar"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="eliminarMaterial(${mat.id})" title="Borrar"><i class="fas fa-trash"></i></button>
                 </div>
             `;
             ul.appendChild(li);
         });
     }
 
+    // ABRIR MODAL EDICION (NUEVO)
+    function abrirEditar(id) {
+        const mat = listaMaterialesCache.find(m => m.id === id);
+        if(!mat) return;
+        
+        document.getElementById('em_id').value = mat.id;
+        document.getElementById('em_nombre').value = mat.nombre;
+        document.getElementById('em_marca').value = mat.marca || '';
+        document.getElementById('em_codigo').value = mat.codigo_1 || '';
+        document.getElementById('em_valor_int').value = mat.valor_int;
+        document.getElementById('em_valor_normal').value = mat.valor_normal || 0;
+        document.getElementById('em_unidad').value = mat.unidad || 'Un.';
+
+        const modal = new bootstrap.Modal(document.getElementById('modalEditarMaterial'));
+        modal.show();
+    }
+
+    // GUARDAR EDICION (NUEVO)
+    async function guardarEdicion() {
+        const id = document.getElementById('em_id').value;
+        const body = {
+            nombre: document.getElementById('em_nombre').value,
+            marca: document.getElementById('em_marca').value,
+            codigo: document.getElementById('em_codigo').value,
+            valor_int: document.getElementById('em_valor_int').value,
+            valor_normal: document.getElementById('em_valor_normal').value,
+            unidad: document.getElementById('em_unidad').value
+        };
+
+        try {
+            const res = await fetch(`/api/materiales/${id}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            });
+            if(res.ok) {
+                // Cerrar modal
+                const modalEl = document.getElementById('modalEditarMaterial');
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+                buscarMateriales(); // Recargar lista
+                alert("✅ Material Actualizado");
+            } else {
+                alert("Error al actualizar");
+            }
+        } catch(e) { alert("Error de conexión"); }
+    }
+
     async function eliminarMaterial(id) {
         if(!confirm("⚠️ ¿Estás seguro de borrar este material del catálogo?\nEsta acción es permanente.")) return;
         try {
             const res = await fetch(`/api/materiales/${id}`, { method: 'DELETE' });
-            if(res.ok) {
-                buscarMateriales(); // Recargar lista
-            } else {
-                const txt = await res.text();
-                alert(txt); // Mostrar mensaje de error (ej: está en uso)
-            }
+            if(res.ok) buscarMateriales();
+            else { const txt = await res.text(); alert(txt); }
         } catch(e) { alert("Error de conexión"); }
     }
 
