@@ -156,48 +156,47 @@
                             <span><i class="fas fa-list me-2"></i>Detalle Cotización</span><small id="fecha-proyecto">---</small>
                         </div>
                         
-                        <div class="card-body p-0 border-bottom bg-white">
-                            <div class="row g-0">
-                                <div class="col-6 p-3 total-box-neto bg-light">
-                                    <h6 class="text-muted fw-bold text-uppercase small mb-3">💰 Gasto Real (Neto)</h6>
-                                    
-                                    <div class="d-flex justify-content-between mb-1 small">
-                                        <span>Materiales:</span><span class="fw-bold" id="total-materiales">$0</span>
+                        <div class="card-body p-0 d-flex flex-column bg-white">
+                            
+                            <div class="border-bottom">
+                                <div class="row g-0">
+                                    <div class="col-6 p-3 total-box-neto bg-light">
+                                        <h6 class="text-muted fw-bold text-uppercase small mb-3">💰 Gasto Real (Neto)</h6>
+                                        <div class="d-flex justify-content-between mb-1 small">
+                                            <span>Materiales:</span><span class="fw-bold" id="total-materiales">$0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1 small">
+                                            <span>Mano Obra:</span><span class="fw-bold" id="total-mo">$0</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2 small text-primary">
+                                            <span>Margen (<span id="lbl-margen">30</span>%):</span><span class="fw-bold" id="total-margen">$0</span>
+                                        </div>
+                                        <hr class="my-2">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="h6 mb-0 text-success">TOTAL PROYECTO:</span>
+                                            <span class="h4 mb-0 text-success fw-bold" id="gran-total">$0</span>
+                                        </div>
                                     </div>
-                                    <div class="d-flex justify-content-between mb-1 small">
-                                        <span>Mano Obra:</span><span class="fw-bold" id="total-mo">$0</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2 small text-primary">
-                                        <span>Margen (<span id="lbl-margen">30</span>%):</span><span class="fw-bold" id="total-margen">$0</span>
-                                    </div>
-                                    <hr class="my-2">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="h6 mb-0 text-success">TOTAL PROYECTO:</span>
-                                        <span class="h4 mb-0 text-success fw-bold" id="gran-total">$0</span>
-                                    </div>
-                                </div>
 
-                                <div class="col-6 p-3">
-                                    <h6 class="text-muted fw-bold text-uppercase small mb-3">🏷️ Valor Ref. (Normal)</h6>
-                                    
-                                    <div class="d-flex justify-content-between mb-1 small text-muted">
-                                        <span>Materiales Lista:</span><span class="fw-bold" id="ref-mat-normal">$0</span>
-                                    </div>
-                                    <div class="alert alert-info py-2 px-2 mt-3 mb-0 text-center small">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Ahorro/Diferencia:
-                                        <div class="fw-bold mt-1" id="diferencia-precio">$0</div>
+                                    <div class="col-6 p-3">
+                                        <h6 class="text-muted fw-bold text-uppercase small mb-3">🏷️ Valor Ref. (Normal)</h6>
+                                        <div class="d-flex justify-content-between mb-1 small text-muted">
+                                            <span>Materiales Lista:</span><span class="fw-bold" id="ref-mat-normal">$0</span>
+                                        </div>
+                                        <div class="alert alert-info py-2 px-2 mt-3 mb-0 text-center small">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Ahorro/Diferencia:
+                                            <div class="fw-bold mt-1" id="diferencia-precio">$0</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                            <div class="table-responsive flex-grow-1" style="overflow-y: auto;">
                                 <table class="table table-sm table-striped mb-0">
                                     <thead class="table-secondary sticky-top">
                                         <tr>
-                                            <th>Item</th>
+                                            <th class="ps-3">Item</th>
                                             <th width="70">Cant.</th>
                                             <th class="text-end">Costo</th>
                                             <th width="40"></th>
@@ -282,22 +281,21 @@
     // --- CALCULO TOTALES ---
     async function agregarItem(matId, nombre, precio, precioNormal) {
         if(!cotizacionIdActual) return alert("Selecciona proyecto en Inicio");
-        
+       
         const pNorm = precioNormal || 0;
         await fetch('/api/items', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: matId, cantidad: 1, precio_congelado: precio }) });
-        
-        
+      
         itemsCotizacion.push({ nombre, precio, precioNormal: pNorm, cantidad: 1 }); 
         renderTabla(); calcularTotales();
     }
 
     function renderTabla() {
         const tbody = document.getElementById('tabla-items'); tbody.innerHTML = '';
-        itemsCotizacion.forEach((item, i) => { tbody.innerHTML += `<tr><td>${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`; });
+        itemsCotizacion.forEach((item, i) => { tbody.innerHTML += `<tr><td class="ps-3">${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`; });
     }
 
     function calcularTotales() {
-        
+   
         const totalMatNeto = itemsCotizacion.reduce((a,b)=>a+(b.cantidad*b.precio),0);
         const mo = Number(document.getElementById('valorDia').value) * Number(document.getElementById('diasTrab').value) * Number(document.getElementById('cantPersonas').value);
         const marg = Number(document.getElementById('margenGeneral').value);
@@ -308,12 +306,9 @@
         document.getElementById('total-margen').innerText = `$${Math.round(util).toLocaleString()}`;
         document.getElementById('gran-total').innerText = `$${Math.round(totalMatNeto+mo+util).toLocaleString()}`;
 
-       
         const totalMatNormal = itemsCotizacion.reduce((a,b)=>a+(b.cantidad * (b.precioNormal || 0)), 0);
         document.getElementById('ref-mat-normal').innerText = `$${totalMatNormal.toLocaleString()}`;
-     
         
-       
         const dif = totalMatNormal - totalMatNeto;
         document.getElementById('diferencia-precio').innerText = `$${dif.toLocaleString()}`;
     }
@@ -326,7 +321,6 @@
         document.getElementById('badge-proyecto').textContent = p.nombre_proyecto; document.getElementById('badge-proyecto').className = "badge bg-success rounded-pill px-3 py-2";
         const res = await fetch(`/api/proyecto/${p.id}/items`); const items = await res.json();
         
-       
         itemsCotizacion = items.map(i => ({ 
             id: i.id, material_id: i.material_id, nombre: i.nombre, 
             precio: i.precio_congelado, 
