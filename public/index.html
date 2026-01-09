@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador EceAce - Para Mario ⚡</title>
+    <title>Cotizador EceAce - Gerencia ⚡</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -15,12 +15,13 @@
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .scroll-area { max-height: 500px; overflow-y: auto; }
         .historial-row:hover { background-color: #e9ecef; }
-        
+
         .btn-action:hover { transform: scale(1.1); }
 
         
-        /* Estilo especial para la caja de Gabinete */
+        /* Cajas Especiales */
         .card-gabinete { border-left: 5px solid #ffc107; background-color: #fffbf0; }
+        .card-excel { border-left: 5px solid #198754; background-color: #f0fff4; }
         .label-gab { font-size: 0.8rem; font-weight: bold; color: #664d03; margin-bottom: 2px; display: block;}
     </style>
 </head>
@@ -57,13 +58,9 @@
                         <div class="col-12 mt-3"><button class="btn btn-success w-100 fw-bold" onclick="crearProyecto()"><i class="fas fa-save me-2"></i>Crear y Empezar</button></div>
                     </div>
 
-                    <hr class="my-4">
 
-                    <h6 class="text-warning"><i class="fas fa-file-excel me-2"></i>Importar Excel</h6>
-                    <div class="input-group input-group-sm">
-                        <input type="file" id="archivoExcel" class="form-control">
-                        <button class="btn btn-warning" onclick="subirExcel()">Subir</button>
-                    </div>
+
+            
                 </div>
 
                 <div class="col-md-7">
@@ -88,51 +85,39 @@
             <div class="row">
                 <div class="col-md-5">
                     
-                    <div class="card card-gabinete mb-4 shadow-sm">
-                        <div class="card-header bg-warning text-dark fw-bold">
-                            <i class="fas fa-th-large me-2"></i>Armar Gabinete / Placas
+                    <div class="card card-gabinete mb-3 shadow-sm">
+                        <div class="card-header bg-warning text-dark fw-bold d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-th-large me-2"></i>Armar Gabinete</span>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body py-2">
                             <div class="row g-2 mb-2">
-                                <div class="col-6">
-                                    <span class="label-gab">Alto (mm)</span>
-                                    <input type="number" id="gab_alto" class="form-control form-control-sm" placeholder="Ej: 600">
-                                </div>
-                                <div class="col-6">
-                                    <span class="label-gab">Ancho (mm)</span>
-                                    <input type="number" id="gab_ancho" class="form-control form-control-sm" placeholder="Ej: 400">
-                                </div>
+                                <div class="col-6"><span class="label-gab">Alto (mm)</span><input type="number" id="gab_alto" class="form-control form-control-sm" placeholder="Ej: 600"></div>
+                                <div class="col-6"><span class="label-gab">Ancho (mm)</span><input type="number" id="gab_ancho" class="form-control form-control-sm" placeholder="Ej: 400"></div>
+                            
                             </div>
-                            
-                            <hr class="text-warning my-2">
-                            
-                            <div class="row g-2">
-                                <div class="col-6">
-                                    <span class="label-gab">Precio Placa Sup ($)</span>
-                                    <input type="number" id="p_sup" class="form-control form-control-sm" placeholder="0">
-                                </div>
-                                <div class="col-6">
-                                    <span class="label-gab">Precio Placa Inf ($)</span>
-                                    <input type="number" id="p_inf" class="form-control form-control-sm" placeholder="0">
-                                </div>
-                                <div class="col-6">
-                                    <span class="label-gab">Precio Placa Izq ($)</span>
-                                    <input type="number" id="p_izq" class="form-control form-control-sm" placeholder="0">
-                                </div>
-                                <div class="col-6">
-                                    <span class="label-gab">Precio Placa Der ($)</span>
-                                    <input type="number" id="p_der" class="form-control form-control-sm" placeholder="0">
-                                </div>
-                                
-                                <div class="col-12 mt-3">
-                                    <button class="btn btn-dark w-100" onclick="agregarGabineteEspecial()">
-                                        <i class="fas fa-plus-circle me-2"></i>Calcular y Agregar
-                                    </button>
-                                </div>
 
+                            <div class="row g-2">
+                                <div class="col-3 px-1"><span class="label-gab">Sup $</span><input type="number" id="p_sup" class="form-control form-control-sm text-center px-0" placeholder="0"></div>
+                                <div class="col-3 px-1"><span class="label-gab">Inf $</span><input type="number" id="p_inf" class="form-control form-control-sm text-center px-0" placeholder="0"></div>
+                                <div class="col-3 px-1"><span class="label-gab">Izq $</span><input type="number" id="p_izq" class="form-control form-control-sm text-center px-0" placeholder="0"></div>
+                                <div class="col-3 px-1"><span class="label-gab">Der $</span><input type="number" id="p_der" class="form-control form-control-sm text-center px-0" placeholder="0"></div>
+                                <div class="col-12 mt-2"><button class="btn btn-dark w-100 btn-sm" onclick="agregarGabineteEspecial()"><i class="fas fa-plus-circle me-2"></i>Agregar</button></div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="card card-excel mb-3 shadow-sm">
+                        <div class="card-body py-2 d-flex align-items-center gap-2">
+                            <i class="fas fa-file-excel text-success fa-lg"></i>
+                            <div class="flex-grow-1">
+                                <input type="file" id="archivoExcel" class="form-control form-control-sm">
+                            </div>
+                            <button class="btn btn-success btn-sm fw-bold" onclick="subirExcel()" title="Subir Inventario">
+                                <i class="fas fa-upload"></i>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="d-flex gap-2 mb-3">
                         <div class="input-group">
                             <span class="input-group-text bg-light"><i class="fas fa-search"></i></span>
@@ -152,7 +137,7 @@
                             <span><i class="fas fa-list me-2"></i>Detalle</span><small id="fecha-proyecto">---</small>
                         </div>
                         <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
                                 <table class="table table-sm table-striped mb-0">
                                     <thead><tr><th>Item</th><th width="70">Cant.</th><th class="text-end">Total</th><th width="40"></th></tr></thead>
                                     <tbody id="tabla-items"></tbody>
@@ -190,87 +175,71 @@
 
     document.addEventListener('DOMContentLoaded', () => { cargarHistorial(); buscarMateriales(); });
 
-    // --- NUEVO: GABINETE POR PLACAS ---
+    // --- LOGICA GABINETE ESPECIAL ---
     async function agregarGabineteEspecial() {
         if(!cotizacionIdActual) return alert("¡Crea un proyecto primero en la pestaña Inicio!");
         
         const alto = document.getElementById('gab_alto').value || '???';
         const ancho = document.getElementById('gab_ancho').value || '???';
-        
-        // Obtenemos los precios (si están vacíos, valen 0)
+       
         const pSup = Number(document.getElementById('p_sup').value) || 0;
         const pInf = Number(document.getElementById('p_inf').value) || 0;
         const pIzq = Number(document.getElementById('p_izq').value) || 0;
         const pDer = Number(document.getElementById('p_der').value) || 0;
 
         const costoTotal = pSup + pInf + pIzq + pDer;
-
-        if(costoTotal <= 0) return alert("⚠️ Debes ponerle precio a por lo menos una placa.");
+        if(costoTotal <= 0) return alert("⚠️ Ponle precio a alguna placa.");
 
         const nombreGabinete = `Gabinete ${alto}x${ancho} mm (Modular)`;
 
-        // Registramos el material en BD
+       
         try {
-
+            
             const resMat = await fetch('/api/materiales/nuevo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre: nombreGabinete,
-                    marca: 'Armado',
-                    codigo: 'GAB-MOD',
-                    unidad: 'Un.',
-                    valor_int: costoTotal,
-                    valor_normal: Math.round(costoTotal * 1.3)
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nombreGabinete, marca: 'Armado', codigo: 'GAB-MOD', unidad: 'Un.', valor_int: costoTotal, valor_normal: Math.round(costoTotal * 1.3) })
             });
-
+          
             if(!resMat.ok) return alert("Error al registrar gabinete");
 
-            // Lo agregamos a la cotización
+
             const resBusqueda = await fetch(`/api/materiales?q=${nombreGabinete}`);
             const resultados = await resBusqueda.json();
             
             if(resultados.length > 0) {
-                // Buscamos el último creado (o el que coincida)
-                // Como pueden haber varios con el mismo nombre pero diferente precio, tratamos de coger el ultimo
-                // Pero para simplificar, tomamos el primero que devuelve la API (que ordena por ID DESC en el backend o ASC)
-                // Si el backend ordena por ID ASC, el ultimo estaría al final. 
-                // Mejor cogemos el que tenga el precio exacto por seguridad.
+                // Truco: encontrar el que coincida en precio para evitar duplicados viejos
                 const nuevoGab = resultados.find(m => m.valor_int == costoTotal) || resultados[0];
-                
+             
                 await agregarItem(nuevoGab.id, nuevoGab.nombre, nuevoGab.valor_int);
                 
-                // Limpiar inputs
-                document.getElementById('gab_alto').value = '';
-                document.getElementById('gab_ancho').value = '';
-                document.getElementById('p_sup').value = '';
-                document.getElementById('p_inf').value = '';
-                document.getElementById('p_izq').value = '';
-                document.getElementById('p_der').value = '';
-                alert(`✅ Gabinete agregado por $${costoTotal.toLocaleString()}`);
+                // Limpiar todo
+                document.getElementById('gab_alto').value = ''; document.getElementById('gab_ancho').value = '';
+                document.getElementById('p_sup').value = ''; document.getElementById('p_inf').value = '';
+                document.getElementById('p_izq').value = ''; document.getElementById('p_der').value = '';
+                alert(`✅ Agregado: ${nombreGabinete}`);
                 buscarMateriales();
             }
-
-        } catch(e) { console.error(e); alert("Error en proceso de gabinete"); }
+        } catch(e) { console.error(e); alert("Error"); }
     }
-    // --------------------------------
 
+
+    // --- MATERIALES ---
     async function buscarMateriales() {
         const query = document.getElementById('buscador').value;
         const res = await fetch(`/api/materiales?q=${query}`);
         listaMaterialesCache = await res.json();
         const ul = document.getElementById('lista-materiales');
         ul.innerHTML = '';
-
+       
         if(listaMaterialesCache.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
         
         listaMaterialesCache.forEach(mat => {
-
+           
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
+           
             const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
-
+            
             li.innerHTML = `
                 <div style="flex:1"><div class="fw-bold">${mat.nombre}</div><small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small></div>
                 <div class="text-end d-flex align-items-center gap-1">
@@ -283,6 +252,12 @@
         });
     }
 
+    // --- EXCEL ---
+    async function subirExcel() {
+        const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Selecciona archivo");
+        const fd = new FormData(); fd.append('file', f);
+        try { await fetch('/api/upload-excel', {method:'POST', body:fd}); alert("Inventario Actualizado ✅"); buscarMateriales(); } catch(e){ alert("Error al subir"); }
+    }
 
     function abrirEditar(id) {
         const mat = listaMaterialesCache.find(m => m.id === id); if(!mat) return;
@@ -292,32 +267,29 @@
         document.getElementById('em_unidad').value = mat.unidad || 'Un.';
         new bootstrap.Modal(document.getElementById('modalEditarMaterial')).show();
     }
-
-
+    
     async function guardarEdicion() {
         const id = document.getElementById('em_id').value;
         const body = { nombre: document.getElementById('em_nombre').value, marca: document.getElementById('em_marca').value, codigo: document.getElementById('em_codigo').value, valor_int: document.getElementById('em_valor_int').value, valor_normal: document.getElementById('em_valor_normal').value, unidad: document.getElementById('em_unidad').value };
         try { const res = await fetch(`/api/materiales/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
         if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalEditarMaterial')).hide(); buscarMateriales(); alert("Actualizado"); } else alert("Error"); } catch(e) { alert("Error"); }
     }
-
+   
     async function eliminarMaterial(id) { if(!confirm("⚠️ ¿Borrar material?")) return; try { const res = await fetch(`/api/materiales/${id}`, { method: 'DELETE' }); if(res.ok) buscarMateriales(); else { const txt = await res.text(); alert(txt); } } catch(e){ alert("Error"); } }
-
+   
     async function guardarMaterialNuevo() {
         const nombre = document.getElementById('nm_nombre').value; const marca = document.getElementById('nm_marca').value; const codigo = document.getElementById('nm_codigo').value; const valor_int = document.getElementById('nm_valor_int').value; const valor_normal = document.getElementById('nm_valor_normal').value; const unidad = document.getElementById('nm_unidad').value;
         if(!nombre || !valor_int) return alert("Falta Nombre o Precio");
         try { const res = await fetch('/api/materiales/nuevo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, marca, codigo, unidad, valor_int, valor_normal }) });
         if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalNuevoMaterial')).hide(); document.getElementById('formNuevoMaterial').reset(); buscarMateriales(); alert("Guardado"); } else alert("Error"); } catch (e) { alert("Error"); }
     }
-
-
+   
     async function agregarItem(matId, nombre, precio) {
-        if(!cotizacionIdActual) return alert("Selecciona proyecto");
+        if(!cotizacionIdActual) return alert("Selecciona proyecto en Inicio");
         await fetch('/api/items', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: matId, cantidad: 1, precio_congelado: precio }) });
         itemsCotizacion.push({ nombre, precio, cantidad: 1 }); renderTabla(); calcularTotales();
     }
-
-
+    
     async function cargarHistorial() {
         const res = await fetch('/api/historial'); proyectosHistorial = await res.json();
         const tbody = document.getElementById('tabla-historial'); tbody.innerHTML = '';
@@ -325,7 +297,7 @@
     }
     function cargarDesdeId(id) { const p = proyectosHistorial.find(x => x.id === id); if(p) cargarProyectoExistente(p); }
     async function eliminarCotizacion(id) { if(confirm("¿Eliminar cotización?")) { await fetch(`/api/cotizaciones/${id}`, {method:'DELETE'}); if(cotizacionIdActual===id) location.reload(); else cargarHistorial(); } }
-
+   
     async function cargarProyectoExistente(p) {
         cotizacionIdActual = p.id; proyectoData = p;
         document.getElementById('valorDia').value = p.valor_dia_mo; document.getElementById('diasTrab').value = p.dias_trabajados;
@@ -335,21 +307,20 @@
         itemsCotizacion = items.map(i => ({ id: i.id, material_id: i.material_id, nombre: i.nombre, precio: i.precio_congelado, cantidad: Number(i.cantidad) }));
         renderTabla(); calcularTotales(); new bootstrap.Tab(document.querySelector('#cotizador-tab')).show();
     }
-
-
+    
     async function crearProyecto() {
         const nombre = document.getElementById('nombreProyecto').value; if(!nombre) return alert("Falta nombre");
         const body = { nombre_proyecto: nombre, cliente: document.getElementById('cliente').value, valor_dia_mo: document.getElementById('valorDia').value, dias_trabajados: document.getElementById('diasTrab').value, cantidad_personas: document.getElementById('cantPersonas').value, margen_general: document.getElementById('margenGeneral').value };
         const res = await fetch('/api/cotizaciones', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
         const data = await res.json(); body.id = data.id; cargarProyectoExistente(body); cargarHistorial();
     }
-
-
+    
     function renderTabla() {
         const tbody = document.getElementById('tabla-items'); tbody.innerHTML = '';
         itemsCotizacion.forEach((item, i) => { tbody.innerHTML += `<tr><td>${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`; });
+    
     }
-
+    
     function calcularTotales() {
         const totalMat = itemsCotizacion.reduce((a,b)=>a+(b.cantidad*b.precio),0);
         const mo = Number(document.getElementById('valorDia').value) * Number(document.getElementById('diasTrab').value) * Number(document.getElementById('cantPersonas').value);
@@ -358,9 +329,9 @@
         document.getElementById('total-materiales').innerText = `$${totalMat.toLocaleString()}`;
         document.getElementById('total-mo').innerText = `$${mo.toLocaleString()}`;
         document.getElementById('total-margen').innerText = `$${util.toLocaleString()}`;
-
-
+       
         
+       
         document.getElementById('gran-total').innerText = `$${Math.round(totalMat+mo+util).toLocaleString()}`;
     
     }
@@ -369,12 +340,9 @@
 
 
 
-    async function subirExcel() {
-        const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Elige archivo");
-        const fd = new FormData(); fd.append('file', f);
-        try { await fetch('/api/upload-excel', {method:'POST', body:fd}); alert("Importado"); buscarMateriales(); } catch(e){ alert("Error"); }
-    }
+
 </script>
+
 
 </body>
 </html>
