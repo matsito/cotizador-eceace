@@ -9,7 +9,7 @@ const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
 
-
+// Configuración de la Base de Datos
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
@@ -26,9 +26,9 @@ app.use(express.static(rutaPublic));
 app.use(express.static(rutaRaiz));
 
 app.get('/', (req, res) => {
-
+   
     const archivoPublic = path.join(rutaPublic, 'index.html');
-
+   
     if (fs.existsSync(archivoPublic)) res.sendFile(archivoPublic);
     else res.sendFile(path.join(rutaRaiz, 'index.html'));
 });
@@ -45,10 +45,17 @@ app.get('/api/materiales', async (req, res) => {
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
-// 2. CREAR COTIZACIÓN
+// 2. CREAR COTIZACIÓN (ACTUALIZADO: CAMPOS OPCIONALES)
 app.post('/api/cotizaciones', async (req, res) => {
     try {
-        const { nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general } = req.body;
+        // Si no vienen datos, ponemos 0 por defecto
+        const nombre_proyecto = req.body.nombre_proyecto;
+        const cliente = req.body.cliente || '';
+        const valor_dia_mo = req.body.valor_dia_mo || 0;
+        const dias_trabajados = req.body.dias_trabajados || 0;
+        const cantidad_personas = req.body.cantidad_personas || 0;
+        const margen_general = req.body.margen_general || 30; // Margen por defecto 30 si no ponen nada
+
         const result = await pool.query(
             "INSERT INTO cotizaciones (nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
             [nombre_proyecto, cliente, valor_dia_mo, dias_trabajados, cantidad_personas, margen_general]
@@ -88,13 +95,13 @@ app.get('/api/proyecto/:id/items', async (req, res) => {
 app.delete('/api/cotizaciones/:id', async (req, res) => {
     try {
         const { id } = req.params;
-
+       
         await pool.query("DELETE FROM items_cotizacion WHERE cotizacion_id = $1", [id]);
-
+       
         await pool.query("DELETE FROM cotizaciones WHERE id = $1", [id]);
-
+       
         res.json({ message: "Eliminado correctamente" });
-
+   
     } catch (err) { console.error(err); res.status(500).send(err.message); }
 });
 
@@ -105,18 +112,19 @@ app.post('/api/upload-excel', upload.single('file'), async (req, res) => {
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
+     
         let contador = 0;
         for (const row of data) {
-
+     
             const nombre = row['nombre'] || row['Nombre'] || row['Descripcion'];
             const precio = row['valor_int'] || row['Precio'] || row['Valor Int.'];
             const codigo = row['codigo_1'] || row['Codigo'];
             const unidad = row['unidad'] || row['UN.'] || 'C/u';
             const valorNormal = row['valor_normal'] || row['Valor Normal'] || 0;
             const marca = row['marca'] || row['Marca'] || 'Genérico';
+           
             if (nombre && precio) {
-
+               
                 await pool.query(
                     "INSERT INTO materiales (nombre, unidad, codigo_1, valor_int, valor_normal, marca) VALUES ($1, $2, $3, $4, $5, $6)",
                     [nombre, unidad, codigo, precio, valorNormal, marca]
@@ -153,7 +161,7 @@ app.delete('/api/materiales/:id', async (req, res) => {
     }
 });
 
-// 10. EDITAR MATERIAL (NUEVO) ✏️
+// 10. EDITAR MATERIAL
 app.put('/api/materiales/:id', async (req, res) => {
     try {
         const { id } = req.params;
