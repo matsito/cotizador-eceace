@@ -15,11 +15,13 @@
         .card { border-radius: 12px; border: none; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .scroll-area { max-height: 500px; overflow-y: auto; }
         .historial-row:hover { background-color: #e9ecef; }
-
+        
         .btn-action:hover { transform: scale(1.1); }
+
         
         /* Estilo especial para la caja de Gabinete */
         .card-gabinete { border-left: 5px solid #ffc107; background-color: #fffbf0; }
+        .label-gab { font-size: 0.8rem; font-weight: bold; color: #664d03; margin-bottom: 2px; display: block;}
     </style>
 </head>
 <body>
@@ -88,28 +90,46 @@
                     
                     <div class="card card-gabinete mb-4 shadow-sm">
                         <div class="card-header bg-warning text-dark fw-bold">
-                            <i class="fas fa-hdd me-2"></i>Agregar Gabinete / Tablero
+                            <i class="fas fa-th-large me-2"></i>Armar Gabinete / Placas
                         </div>
                         <div class="card-body">
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <span class="label-gab">Alto (mm)</span>
+                                    <input type="number" id="gab_alto" class="form-control form-control-sm" placeholder="Ej: 600">
+                                </div>
+                                <div class="col-6">
+                                    <span class="label-gab">Ancho (mm)</span>
+                                    <input type="number" id="gab_ancho" class="form-control form-control-sm" placeholder="Ej: 400">
+                                </div>
+                            </div>
+                            
+                            <hr class="text-warning my-2">
+                            
                             <div class="row g-2">
-                                <div class="col-4">
-                                    <input type="number" id="gab_alto" class="form-control form-control-sm" placeholder="Alto (mm)">
+                                <div class="col-6">
+                                    <span class="label-gab">Precio Placa Sup ($)</span>
+                                    <input type="number" id="p_sup" class="form-control form-control-sm" placeholder="0">
                                 </div>
-                                <div class="col-4">
-                                    <input type="number" id="gab_ancho" class="form-control form-control-sm" placeholder="Ancho (mm)">
+                                <div class="col-6">
+                                    <span class="label-gab">Precio Placa Inf ($)</span>
+                                    <input type="number" id="p_inf" class="form-control form-control-sm" placeholder="0">
                                 </div>
-                                <div class="col-4">
-                                    <input type="number" id="gab_fondo" class="form-control form-control-sm" placeholder="Fondo (mm)">
+                                <div class="col-6">
+                                    <span class="label-gab">Precio Placa Izq ($)</span>
+                                    <input type="number" id="p_izq" class="form-control form-control-sm" placeholder="0">
                                 </div>
-                                <div class="col-8">
-                                    <input type="number" id="gab_precio" class="form-control" placeholder="Precio Costo ($)">
+                                <div class="col-6">
+                                    <span class="label-gab">Precio Placa Der ($)</span>
+                                    <input type="number" id="p_der" class="form-control form-control-sm" placeholder="0">
                                 </div>
-                                <div class="col-4">
+                                
+                                <div class="col-12 mt-3">
                                     <button class="btn btn-dark w-100" onclick="agregarGabineteEspecial()">
-                                        <i class="fas fa-plus"></i>
+                                        <i class="fas fa-plus-circle me-2"></i>Calcular y Agregar
                                     </button>
                                 </div>
-                                <small class="text-muted text-center" style="font-size: 0.8rem;">Ej: 600 x 400 x 250 mm</small>
+
                             </div>
                         </div>
                     </div>
@@ -170,60 +190,69 @@
 
     document.addEventListener('DOMContentLoaded', () => { cargarHistorial(); buscarMateriales(); });
 
-    // --- NUEVO: GABINETE ESPECIAL ---
+    // --- NUEVO: GABINETE POR PLACAS ---
     async function agregarGabineteEspecial() {
         if(!cotizacionIdActual) return alert("¡Crea un proyecto primero en la pestaña Inicio!");
         
-        const alto = document.getElementById('gab_alto').value;
-        const ancho = document.getElementById('gab_ancho').value;
-        const fondo = document.getElementById('gab_fondo').value;
-        const precio = document.getElementById('gab_precio').value;
+        const alto = document.getElementById('gab_alto').value || '???';
+        const ancho = document.getElementById('gab_ancho').value || '???';
+        
+        // Obtenemos los precios (si están vacíos, valen 0)
+        const pSup = Number(document.getElementById('p_sup').value) || 0;
+        const pInf = Number(document.getElementById('p_inf').value) || 0;
+        const pIzq = Number(document.getElementById('p_izq').value) || 0;
+        const pDer = Number(document.getElementById('p_der').value) || 0;
 
-        if(!alto || !ancho || !fondo || !precio) return alert("Por favor completa todas las medidas y el precio");
+        const costoTotal = pSup + pInf + pIzq + pDer;
 
-        const nombreGabinete = `Gabinete Metálico ${alto}x${ancho}x${fondo} mm`;
+        if(costoTotal <= 0) return alert("⚠️ Debes ponerle precio a por lo menos una placa.");
 
-        // 1. Crear el material en la BD (backend) para que quede registro
+        const nombreGabinete = `Gabinete ${alto}x${ancho} mm (Modular)`;
+
+        // Registramos el material en BD
         try {
-            // Usamos la misma API de crear material, pero lo hacemos automático
+
             const resMat = await fetch('/api/materiales/nuevo', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     nombre: nombreGabinete,
-                    marca: 'Especial',
-                    codigo: 'GAB-ESP',
+                    marca: 'Armado',
+                    codigo: 'GAB-MOD',
                     unidad: 'Un.',
-                    valor_int: precio,
-                    valor_normal: Math.round(precio * 1.3) // Calculamos un precio normal sugerido
+                    valor_int: costoTotal,
+                    valor_normal: Math.round(costoTotal * 1.3)
                 })
             });
 
-            if(!resMat.ok) return alert("Error al registrar el gabinete en el sistema");
-            
-            // 2. Ahora lo buscamos (truco rápido: como es el último, aparecerá al buscar)
-            // Para hacerlo más robusto, recargamos la búsqueda con el nombre exacto
+            if(!resMat.ok) return alert("Error al registrar gabinete");
+
+            // Lo agregamos a la cotización
             const resBusqueda = await fetch(`/api/materiales?q=${nombreGabinete}`);
             const resultados = await resBusqueda.json();
             
             if(resultados.length > 0) {
-                // Tomamos el primero que coincida (el que acabamos de crear)
-                const nuevoGab = resultados[0];
+                // Buscamos el último creado (o el que coincida)
+                // Como pueden haber varios con el mismo nombre pero diferente precio, tratamos de coger el ultimo
+                // Pero para simplificar, tomamos el primero que devuelve la API (que ordena por ID DESC en el backend o ASC)
+                // Si el backend ordena por ID ASC, el ultimo estaría al final. 
+                // Mejor cogemos el que tenga el precio exacto por seguridad.
+                const nuevoGab = resultados.find(m => m.valor_int == costoTotal) || resultados[0];
+                
                 await agregarItem(nuevoGab.id, nuevoGab.nombre, nuevoGab.valor_int);
                 
-                // Limpiamos los inputs
+                // Limpiar inputs
                 document.getElementById('gab_alto').value = '';
                 document.getElementById('gab_ancho').value = '';
-                document.getElementById('gab_fondo').value = '';
-                document.getElementById('gab_precio').value = '';
-                alert("✅ Gabinete agregado correctamente");
-                buscarMateriales(); // Refrescar lista por si quiere agregar otro
+                document.getElementById('p_sup').value = '';
+                document.getElementById('p_inf').value = '';
+                document.getElementById('p_izq').value = '';
+                document.getElementById('p_der').value = '';
+                alert(`✅ Gabinete agregado por $${costoTotal.toLocaleString()}`);
+                buscarMateriales();
             }
 
-        } catch(e) {
-            console.error(e);
-            alert("Error al procesar el gabinete");
-        }
+        } catch(e) { console.error(e); alert("Error en proceso de gabinete"); }
     }
     // --------------------------------
 
@@ -237,6 +266,7 @@
         if(listaMaterialesCache.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
         
         listaMaterialesCache.forEach(mat => {
+
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
             const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
@@ -328,10 +358,16 @@
         document.getElementById('total-materiales').innerText = `$${totalMat.toLocaleString()}`;
         document.getElementById('total-mo').innerText = `$${mo.toLocaleString()}`;
         document.getElementById('total-margen').innerText = `$${util.toLocaleString()}`;
-        document.getElementById('gran-total').innerText = `$${Math.round(totalMat+mo+util).toLocaleString()}`;
 
-    }
+
+        
+        document.getElementById('gran-total').innerText = `$${Math.round(totalMat+mo+util).toLocaleString()}`;
     
+    }
+
+
+
+
 
     async function subirExcel() {
         const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Elige archivo");
