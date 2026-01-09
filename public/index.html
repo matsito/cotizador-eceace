@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cotizador EceAce - Versión Mario PRO ⚡</title>
+    <title>Cotizador EceAce - Versión Final Mario ⚡</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,10 +16,15 @@
         .scroll-area { max-height: 500px; overflow-y: auto; }
         .historial-row:hover { background-color: #e9ecef; }
         
-        /* Estilos Cajas Especiales */
+        /* Cajas Especiales */
         .card-gabinete { border-left: 5px solid #ffc107; background-color: #fffbf0; }
         .card-excel { border-left: 5px solid #198754; background-color: #f0fff4; }
         .label-gab { font-size: 0.8rem; font-weight: bold; color: #664d03; margin-bottom: 2px; display: block;}
+
+        /* Totales */
+        .total-box-neto { border-right: 1px solid #dee2e6; }
+        .text-neto { color: #198754; } /* Verde para costo real */
+        .text-normal { color: #0dcaf0; } /* Celeste para referencia */
     </style>
 </head>
 <body>
@@ -32,7 +37,6 @@
 </nav>
 
 <div class="container">
-    
     <ul class="nav nav-tabs bg-white rounded-top px-3 pt-2 shadow-sm" id="myTab" role="tablist">
         <li class="nav-item"><button class="nav-link active" id="inicio-tab" data-bs-toggle="tab" data-bs-target="#inicio" type="button"><i class="fas fa-home me-2"></i>Inicio e Historial</button></li>
         <li class="nav-item"><button class="nav-link" id="cotizador-tab" data-bs-toggle="tab" data-bs-target="#cotizador" type="button"><i class="fas fa-calculator me-2"></i>Cotizador</button></li>
@@ -42,7 +46,6 @@
         
         <div class="tab-pane fade show active" id="inicio" role="tabpanel">
             <div class="row g-4">
-
                 <div class="col-md-5 border-end">
                     <h5 class="text-primary mb-3"><i class="fas fa-plus-circle me-2"></i>Nuevo Proyecto</h5>
                     <div class="row g-2">
@@ -54,9 +57,7 @@
                         <div class="col-6"><label class="small text-muted">Personas</label><input type="number" id="cantPersonas" class="form-control" value="1"></div>
                         <div class="col-12 mt-3"><button class="btn btn-success w-100 fw-bold" onclick="crearProyecto()"><i class="fas fa-save me-2"></i>Crear y Empezar</button></div>
                     </div>
-
                 </div>
-
                 <div class="col-md-7">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="text-primary mb-0"><i class="fas fa-history me-2"></i>Historial</h5>
@@ -69,11 +70,8 @@
                         </table>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
 
         <div class="tab-pane fade" id="cotizador" role="tabpanel">
             <div class="row">
@@ -84,7 +82,6 @@
                             <i class="fas fa-hdd me-2"></i>Gestor de Gabinetes
                         </div>
                         <div class="card-body">
-                            
                             <h6 class="label-gab text-uppercase border-bottom border-warning pb-1 mb-2">1. Definir y Guardar Precio</h6>
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
@@ -120,7 +117,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <h6 class="label-gab text-uppercase border-bottom border-warning pb-1 mb-2 mt-3">2. Seleccionar Guardado</h6>
                             <div class="input-group input-group-sm">
                                 <select id="sel_gabinete_guardado" class="form-select">
@@ -130,7 +126,6 @@
                                     Agregar <i class="fas fa-plus ms-1"></i>
                                 </button>
                             </div>
-
                         </div>
                     </div>
 
@@ -156,36 +151,60 @@
                 </div>
                 
                 <div class="col-md-7">
-                    <div class="card bg-light border">
+                    <div class="card bg-light border h-100">
                         <div class="card-header d-flex justify-content-between bg-dark text-white">
                             <span><i class="fas fa-list me-2"></i>Detalle</span><small id="fecha-proyecto">---</small>
                         </div>
                         <div class="card-body p-0">
-                            <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                                 <table class="table table-sm table-striped mb-0">
-                                    <thead><tr><th>Item</th><th width="70">Cant.</th><th class="text-end">Total</th><th width="40"></th></tr></thead>
+                                    <thead><tr><th>Item</th><th width="70">Cant.</th><th class="text-end">Costo</th><th width="40"></th></tr></thead>
                                     <tbody id="tabla-items"></tbody>
                                 </table>
                             </div>
                         </div>
-                        <div class="card-footer bg-white">
-                            <div class="row text-end">
-                                <div class="col-6 text-muted">Materiales:</div><div class="col-6 fw-bold" id="total-materiales">$0</div>
-                                <div class="col-6 text-muted">Mano de Obra:</div><div class="col-6 fw-bold" id="total-mo">$0</div>
-                                <div class="col-6 text-primary">Margen (<span id="lbl-margen">30</span>%):</div><div class="col-6 text-primary fw-bold" id="total-margen">$0</div>
-                                <div class="col-12"><hr></div>
-                                <div class="col-6 h5 text-success">TOTAL:</div><div class="col-6 h5 text-success fw-bold" id="gran-total">$0</div>
+                        
+                        <div class="card-footer bg-white p-0">
+                            <div class="row g-0">
+                                <div class="col-6 p-3 total-box-neto bg-light">
+                                    <h6 class="text-muted fw-bold text-uppercase small mb-3">💰 Gasto Real (Neto)</h6>
+                                    
+                                    <div class="d-flex justify-content-between mb-1 small">
+                                        <span>Materiales:</span><span class="fw-bold" id="total-materiales">$0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-1 small">
+                                        <span>Mano Obra:</span><span class="fw-bold" id="total-mo">$0</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 small text-primary">
+                                        <span>Margen (<span id="lbl-margen">30</span>%):</span><span class="fw-bold" id="total-margen">$0</span>
+                                    </div>
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="h6 mb-0 text-success">TOTAL PROYECTO:</span>
+                                        <span class="h4 mb-0 text-success fw-bold" id="gran-total">$0</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-6 p-3">
+                                    <h6 class="text-muted fw-bold text-uppercase small mb-3">🏷️ Valor Ref. (Normal)</h6>
+                                    
+                                    <div class="d-flex justify-content-between mb-1 small text-muted">
+                                        <span>Materiales Lista:</span><span class="fw-bold" id="ref-mat-normal">$0</span>
+                                    </div>
+                                    <div class="alert alert-info py-2 px-2 mt-3 mb-0 text-center small">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Ahorro/Diferencia:
+                                        <div class="fw-bold mt-1" id="diferencia-precio">$0</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-
 </div>
-
 
 <div class="modal fade" id="modalNuevoMaterial" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Nuevo Material</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formNuevoMaterial"><div class="mb-3"><label>Nombre</label><input type="text" class="form-control" id="nm_nombre" required></div><div class="row g-3"><div class="col-6"><label>Marca</label><input type="text" class="form-control" id="nm_marca"></div><div class="col-6"><label>Código</label><input type="text" class="form-control" id="nm_codigo"></div><div class="col-6"><label>Precio Neto</label><input type="number" class="form-control" id="nm_valor_int" required></div><div class="col-6"><label>Precio Normal</label><input type="number" class="form-control" id="nm_valor_normal"></div><div class="col-12"><label>Unidad</label><select class="form-select" id="nm_unidad"><option value="Un.">Un.</option><option value="Mts">Mts</option><option value="Gl">Gl</option></select></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-success" onclick="guardarMaterialNuevo()">Guardar</button></div></div></div></div>
 <div class="modal fade" id="modalEditarMaterial" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title text-dark">Editar Material</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="formEditarMaterial"><input type="hidden" id="em_id"><div class="mb-3"><label>Nombre</label><input type="text" class="form-control" id="em_nombre" required></div><div class="row g-3"><div class="col-6"><label>Marca</label><input type="text" class="form-control" id="em_marca"></div><div class="col-6"><label>Código</label><input type="text" class="form-control" id="em_codigo"></div><div class="col-6"><label>Precio Neto</label><input type="number" class="form-control" id="em_valor_int" required></div><div class="col-6"><label>Precio Normal</label><input type="number" class="form-control" id="em_valor_normal"></div><div class="col-12"><label>Unidad</label><select class="form-select" id="em_unidad"><option value="Un.">Un.</option><option value="Mts">Mts</option><option value="Gl">Gl</option></select></div></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-warning fw-bold" onclick="guardarEdicion()">Actualizar</button></div></div></div></div>
@@ -197,204 +216,127 @@
     let proyectoData = {};
     let proyectosHistorial = [];
     let listaMaterialesCache = [];
-    let gabinetesGuardadosCache = []; // Nueva lista solo para los select
+    let gabinetesGuardadosCache = [];
 
     document.addEventListener('DOMContentLoaded', () => { 
         cargarHistorial(); 
         buscarMateriales();
-        cargarDropdownGabinetes(); // Cargamos los gabinetes al inicio
+        cargarDropdownGabinetes();
     });
 
-    // --- LOGICA GABINETES MARIO (NUEVA) ---
+    // --- GABINETES ---
     async function guardarGabineteCatalogo() {
         const medida = document.getElementById('sel_medida').value;
         const marca = document.getElementById('sel_marca').value;
         const precio = document.getElementById('in_precio_gab').value;
-
-        if(!precio) return alert("⚠️ Mario, te falta poner el precio.");
-
+        if(!precio) return alert("⚠️ Falta el precio.");
         const nombreGabinete = `Gabinete ${medida}`;
-        
         try {
-            // Guardamos en la base de datos como un material normal
             const res = await fetch('/api/materiales/nuevo', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    nombre: nombreGabinete,
-                    marca: marca,
-                    codigo: 'GAB-STD', // Código estándar para identificarlos
-                    unidad: 'Un.',
-                    valor_int: precio,
-                    valor_normal: Math.round(precio * 1.3)
-                })
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nombreGabinete, marca: marca, codigo: 'GAB-STD', unidad: 'Un.', valor_int: precio, valor_normal: Math.round(precio * 1.3) })
             });
-
-            if(res.ok) {
-                alert(`✅ Guardado: ${nombreGabinete} - ${marca}`);
-                document.getElementById('in_precio_gab').value = ''; // Limpiar precio
-                cargarDropdownGabinetes(); // Actualizar la lista de abajo
-                buscarMateriales(); // Actualizar lista general
-            } else {
-                alert("Error al guardar gabinete.");
-            }
-        } catch(e) { console.error(e); alert("Error de conexión"); }
+            if(res.ok) { alert(`✅ Guardado`); document.getElementById('in_precio_gab').value = ''; cargarDropdownGabinetes(); buscarMateriales(); } else alert("Error");
+        } catch(e) { alert("Error"); }
     }
-
     async function cargarDropdownGabinetes() {
-        // Buscamos todo lo que tenga código "GAB-STD" o nombre "Gabinete"
-        const res = await fetch(`/api/materiales?q=Gabinete`);
-        const lista = await res.json();
-        const select = document.getElementById('sel_gabinete_guardado');
-        select.innerHTML = '<option value="">-- Seleccionar Gabinete --</option>';
-        
-        // Filtramos y ordenamos
+        const res = await fetch(`/api/materiales?q=Gabinete`); const lista = await res.json();
+        const select = document.getElementById('sel_gabinete_guardado'); select.innerHTML = '<option value="">-- Seleccionar --</option>';
         gabinetesGuardadosCache = lista.filter(m => m.nombre.includes('Gabinete'));
-        
-        gabinetesGuardadosCache.forEach(gab => {
-            const opt = document.createElement('option');
-            opt.value = gab.id;
-            opt.text = `${gab.nombre} | ${gab.marca} | $${gab.valor_int.toLocaleString()}`;
-            select.appendChild(opt);
-        });
+        gabinetesGuardadosCache.forEach(gab => { const opt = document.createElement('option'); opt.value = gab.id; opt.text = `${gab.nombre} | ${gab.marca} | $${gab.valor_int.toLocaleString()}`; select.appendChild(opt); });
     }
-
     async function agregarGabineteGuardado() {
-        const id = document.getElementById('sel_gabinete_guardado').value;
-        if(!id) return alert("Selecciona un gabinete de la lista.");
-        
-        // Buscamos el objeto completo en memoria
+        const id = document.getElementById('sel_gabinete_guardado').value; if(!id) return;
         const gab = gabinetesGuardadosCache.find(g => g.id == id);
-        
-        if(gab) {
-            await agregarItem(gab.id, gab.nombre + " (" + gab.marca + ")", gab.valor_int);
-        }
+        if(gab) await agregarItem(gab.id, gab.nombre + " (" + gab.marca + ")", gab.valor_int, gab.valor_normal);
     }
-    // ---------------------------------------
 
+    // --- MATERIALES ---
     async function buscarMateriales() {
         const query = document.getElementById('buscador').value;
         const res = await fetch(`/api/materiales?q=${query}`);
         listaMaterialesCache = await res.json();
-        const ul = document.getElementById('lista-materiales');
-        
-        ul.innerHTML = '';
-        
+        const ul = document.getElementById('lista-materiales'); ul.innerHTML = '';
         if(listaMaterialesCache.length === 0) { ul.innerHTML = '<li class="list-group-item text-center text-muted">No hay resultados</li>'; return; }
-        
         listaMaterialesCache.forEach(mat => {
-            
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
-            
+            const li = document.createElement('li'); li.className = 'list-group-item d-flex justify-content-between align-items-center';
             const marcaTexto = mat.marca ? `Marca: ${mat.marca}` : 'Genérico';
-            
-            li.innerHTML = `
-                <div style="flex:1"><div class="fw-bold">${mat.nombre}</div><small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small></div>
-                <div class="text-end d-flex align-items-center gap-1">
-                    <div class="d-flex flex-column align-items-end me-2"><span class="badge badge-price-neto">N: $${mat.valor_int.toLocaleString()}</span><span class="badge badge-price-normal">P: $${mat.valor_normal ? mat.valor_normal.toLocaleString() : '0'}</span></div>
-                    <button class="btn btn-sm btn-primary rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int})" title="Agregar"><i class="fas fa-plus"></i></button>
-                    <button class="btn btn-sm btn-outline-warning rounded-circle" onclick="abrirEditar(${mat.id})" title="Editar"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="eliminarMaterial(${mat.id})" title="Borrar"><i class="fas fa-trash"></i></button>
-                </div>`;
+            li.innerHTML = `<div style="flex:1"><div class="fw-bold">${mat.nombre}</div><small class="text-muted">${marcaTexto} | ${mat.codigo_1 || ''}</small></div>
+                <div class="text-end d-flex align-items-center gap-1"><div class="d-flex flex-column align-items-end me-2"><span class="badge badge-price-neto">N: $${mat.valor_int.toLocaleString()}</span><span class="badge badge-price-normal">P: $${mat.valor_normal ? mat.valor_normal.toLocaleString() : '0'}</span></div>
+                <button class="btn btn-sm btn-primary rounded-circle" onclick="agregarItem(${mat.id}, '${mat.nombre}', ${mat.valor_int}, ${mat.valor_normal})" title="Agregar"><i class="fas fa-plus"></i></button>
+                <button class="btn btn-sm btn-outline-warning rounded-circle" onclick="abrirEditar(${mat.id})" title="Editar"><i class="fas fa-pencil-alt"></i></button>
+                <button class="btn btn-sm btn-outline-danger rounded-circle" onclick="eliminarMaterial(${mat.id})" title="Borrar"><i class="fas fa-trash"></i></button></div>`;
             ul.appendChild(li);
         });
     }
 
-    // --- FUNCIONES COMUNES (SIN CAMBIOS) ---
-    async function subirExcel() {
-        const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Elige archivo");
-        const fd = new FormData(); fd.append('file', f);
-        try { await fetch('/api/upload-excel', {method:'POST', body:fd}); alert("Inventario Actualizado ✅"); buscarMateriales(); } catch(e){ alert("Error al subir"); }
-    }
-    
-    function abrirEditar(id) {
-        const mat = listaMaterialesCache.find(m => m.id === id); if(!mat) return;
-        document.getElementById('em_id').value = mat.id; document.getElementById('em_nombre').value = mat.nombre;
-        document.getElementById('em_marca').value = mat.marca || ''; document.getElementById('em_codigo').value = mat.codigo_1 || '';
-        document.getElementById('em_valor_int').value = mat.valor_int; document.getElementById('em_valor_normal').value = mat.valor_normal || 0;
-        document.getElementById('em_unidad').value = mat.unidad || 'Un.';
-        new bootstrap.Modal(document.getElementById('modalEditarMaterial')).show();
-    }
-    
-    async function guardarEdicion() {
-        const id = document.getElementById('em_id').value;
-        const body = { nombre: document.getElementById('em_nombre').value, marca: document.getElementById('em_marca').value, codigo: document.getElementById('em_codigo').value, valor_int: document.getElementById('em_valor_int').value, valor_normal: document.getElementById('em_valor_normal').value, unidad: document.getElementById('em_unidad').value };
-        try { const res = await fetch(`/api/materiales/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
-        if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalEditarMaterial')).hide(); buscarMateriales(); cargarDropdownGabinetes(); alert("Actualizado"); } else alert("Error"); } catch(e) { alert("Error"); }
-    }
-    async function eliminarMaterial(id) { if(!confirm("⚠️ ¿Borrar material?")) return; try { const res = await fetch(`/api/materiales/${id}`, { method: 'DELETE' }); if(res.ok) { buscarMateriales(); cargarDropdownGabinetes(); } else { const txt = await res.text(); alert(txt); } } catch(e){ alert("Error"); } }
-    async function guardarMaterialNuevo() {
-        const nombre = document.getElementById('nm_nombre').value; const marca = document.getElementById('nm_marca').value; const codigo = document.getElementById('nm_codigo').value; const valor_int = document.getElementById('nm_valor_int').value; const valor_normal = document.getElementById('nm_valor_normal').value; const unidad = document.getElementById('nm_unidad').value;
-        if(!nombre || !valor_int) return alert("Falta Nombre o Precio");
-        try { const res = await fetch('/api/materiales/nuevo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, marca, codigo, unidad, valor_int, valor_normal }) });
-        if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalNuevoMaterial')).hide(); document.getElementById('formNuevoMaterial').reset(); buscarMateriales(); alert("Guardado"); } else alert("Error"); } catch (e) { alert("Error"); }
-    }
-    
-    async function agregarItem(matId, nombre, precio) {
+    // --- CALCULO TOTALES CON DOBLE COLUMNA ---
+    async function agregarItem(matId, nombre, precio, precioNormal) {
         if(!cotizacionIdActual) return alert("Selecciona proyecto en Inicio");
+        // Aseguramos que precioNormal tenga valor
+        const pNorm = precioNormal || 0;
         await fetch('/api/items', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ cotizacion_id: cotizacionIdActual, material_id: matId, cantidad: 1, precio_congelado: precio }) });
-        itemsCotizacion.push({ nombre, precio, cantidad: 1 }); renderTabla(); calcularTotales();
+        
+        // Agregamos a memoria local con ambos precios
+        itemsCotizacion.push({ nombre, precio, precioNormal: pNorm, cantidad: 1 }); 
+        renderTabla(); calcularTotales();
     }
-    
-    async function cargarHistorial() {
-        const res = await fetch('/api/historial'); proyectosHistorial = await res.json();
-        const tbody = document.getElementById('tabla-historial'); tbody.innerHTML = '';
-        proyectosHistorial.forEach(p => { tbody.innerHTML += `<tr class="historial-row"><td onclick="cargarDesdeId(${p.id})">${p.id}</td><td onclick="cargarDesdeId(${p.id})" class="fw-bold text-primary" style="cursor:pointer">${p.nombre_proyecto}</td><td onclick="cargarDesdeId(${p.id})">${p.cliente}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="cargarDesdeId(${p.id})"><i class="fas fa-folder-open"></i></button><button class="btn btn-sm btn-outline-danger" onclick="eliminarCotizacion(${p.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`; });
+
+    function renderTabla() {
+        const tbody = document.getElementById('tabla-items'); tbody.innerHTML = '';
+        itemsCotizacion.forEach((item, i) => { tbody.innerHTML += `<tr><td>${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`; });
     }
-    function cargarDesdeId(id) { const p = proyectosHistorial.find(x => x.id === id); if(p) cargarProyectoExistente(p); }
-    async function eliminarCotizacion(id) { if(confirm("¿Eliminar cotización?")) { await fetch(`/api/cotizaciones/${id}`, {method:'DELETE'}); if(cotizacionIdActual===id) location.reload(); else cargarHistorial(); } }
-    
+
+    function calcularTotales() {
+        // Columna Izquierda (COSTOS REALES / NETOS)
+        const totalMatNeto = itemsCotizacion.reduce((a,b)=>a+(b.cantidad*b.precio),0);
+        const mo = Number(document.getElementById('valorDia').value) * Number(document.getElementById('diasTrab').value) * Number(document.getElementById('cantPersonas').value);
+        const marg = Number(document.getElementById('margenGeneral').value);
+        const util = (totalMatNeto + mo) * (marg/100);
+        
+        document.getElementById('total-materiales').innerText = `$${totalMatNeto.toLocaleString()}`;
+        document.getElementById('total-mo').innerText = `$${mo.toLocaleString()}`;
+        document.getElementById('total-margen').innerText = `$${Math.round(util).toLocaleString()}`;
+        document.getElementById('gran-total').innerText = `$${Math.round(totalMatNeto+mo+util).toLocaleString()}`;
+
+        // Columna Derecha (PRECIOS LISTA / NORMALES)
+        // Solo sumamos materiales, la MO y margen suelen ser sobre costo, pero aquí comparamos solo materiales
+        const totalMatNormal = itemsCotizacion.reduce((a,b)=>a+(b.cantidad * (b.precioNormal || 0)), 0);
+        document.getElementById('ref-mat-normal').innerText = `$${totalMatNormal.toLocaleString()}`;
+        
+        // Diferencia
+        const dif = totalMatNormal - totalMatNeto;
+        document.getElementById('diferencia-precio').innerText = `$${dif.toLocaleString()}`;
+    }
+
+    // --- CARGA PROYECTO ---
     async function cargarProyectoExistente(p) {
         cotizacionIdActual = p.id; proyectoData = p;
         document.getElementById('valorDia').value = p.valor_dia_mo; document.getElementById('diasTrab').value = p.dias_trabajados;
         document.getElementById('cantPersonas').value = p.cantidad_personas; document.getElementById('margenGeneral').value = p.margen_general;
         document.getElementById('badge-proyecto').textContent = p.nombre_proyecto; document.getElementById('badge-proyecto').className = "badge bg-success rounded-pill px-3 py-2";
         const res = await fetch(`/api/proyecto/${p.id}/items`); const items = await res.json();
-        itemsCotizacion = items.map(i => ({ id: i.id, material_id: i.material_id, nombre: i.nombre, precio: i.precio_congelado, cantidad: Number(i.cantidad) }));
+        
+        // Mapeamos asegurando que venga el valor_normal desde el JOIN de la base de datos
+        itemsCotizacion = items.map(i => ({ 
+            id: i.id, material_id: i.material_id, nombre: i.nombre, 
+            precio: i.precio_congelado, 
+            precioNormal: i.valor_normal, // IMPORTANTE: Viene del join
+            cantidad: Number(i.cantidad) 
+        }));
         renderTabla(); calcularTotales(); new bootstrap.Tab(document.querySelector('#cotizador-tab')).show();
     }
-    
-    async function crearProyecto() {
-        const nombre = document.getElementById('nombreProyecto').value; if(!nombre) return alert("Falta nombre");
-        const body = { nombre_proyecto: nombre, cliente: document.getElementById('cliente').value, valor_dia_mo: document.getElementById('valorDia').value, dias_trabajados: document.getElementById('diasTrab').value, cantidad_personas: document.getElementById('cantPersonas').value, margen_general: document.getElementById('margenGeneral').value };
-        const res = await fetch('/api/cotizaciones', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
-        const data = await res.json(); body.id = data.id; cargarProyectoExistente(body); cargarHistorial();
-    }
-    
-    function renderTabla() {
-        const tbody = document.getElementById('tabla-items'); tbody.innerHTML = '';
-     
-     
-        itemsCotizacion.forEach((item, i) => { tbody.innerHTML += `<tr><td>${item.nombre}</td><td><input type="number" class="form-control form-control-sm text-center" value="${item.cantidad}" onchange="itemsCotizacion[${i}].cantidad=Number(this.value);renderTabla();calcularTotales()"></td><td class="text-end">$${(item.precio*item.cantidad).toLocaleString()}</td><td><button class="btn btn-sm text-danger" onclick="itemsCotizacion.splice(${i},1);renderTabla();calcularTotales()"><i class="fas fa-trash"></i></button></td></tr>`; });
-    
-    }
 
-    function calcularTotales() {
-        const totalMat = itemsCotizacion.reduce((a,b)=>a+(b.cantidad*b.precio),0);
-        const mo = Number(document.getElementById('valorDia').value) * Number(document.getElementById('diasTrab').value) * Number(document.getElementById('cantPersonas').value);
-        const marg = Number(document.getElementById('margenGeneral').value);
-        const util = (totalMat + mo) * (marg/100);
-        document.getElementById('total-materiales').innerText = `$${totalMat.toLocaleString()}`;
-        document.getElementById('total-mo').innerText = `$${mo.toLocaleString()}`;
-       
-      
-        document.getElementById('total-margen').innerText = `$${util.toLocaleString()}`;
-       
-
-        document.getElementById('gran-total').innerText = `$${Math.round(totalMat+mo+util).toLocaleString()}`;
-   
-    }
-
-
-
-
-
-
+    // --- RESTO DE FUNCIONES (EXCEL, CRUD, ETC) ---
+    async function subirExcel() { const f = document.getElementById('archivoExcel').files[0]; if(!f) return alert("Elige archivo"); const fd = new FormData(); fd.append('file', f); try { await fetch('/api/upload-excel', {method:'POST', body:fd}); alert("Inventario Actualizado ✅"); buscarMateriales(); } catch(e){ alert("Error al subir"); } }
+    function abrirEditar(id) { const mat = listaMaterialesCache.find(m => m.id === id); if(!mat) return; document.getElementById('em_id').value = mat.id; document.getElementById('em_nombre').value = mat.nombre; document.getElementById('em_marca').value = mat.marca || ''; document.getElementById('em_codigo').value = mat.codigo_1 || ''; document.getElementById('em_valor_int').value = mat.valor_int; document.getElementById('em_valor_normal').value = mat.valor_normal || 0; document.getElementById('em_unidad').value = mat.unidad || 'Un.'; new bootstrap.Modal(document.getElementById('modalEditarMaterial')).show(); }
+    async function guardarEdicion() { const id = document.getElementById('em_id').value; const body = { nombre: document.getElementById('em_nombre').value, marca: document.getElementById('em_marca').value, codigo: document.getElementById('em_codigo').value, valor_int: document.getElementById('em_valor_int').value, valor_normal: document.getElementById('em_valor_normal').value, unidad: document.getElementById('em_unidad').value }; try { const res = await fetch(`/api/materiales/${id}`, { method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) }); if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalEditarMaterial')).hide(); buscarMateriales(); cargarDropdownGabinetes(); alert("Actualizado"); } else alert("Error"); } catch(e) { alert("Error"); } }
+    async function eliminarMaterial(id) { if(!confirm("⚠️ ¿Borrar material?")) return; try { const res = await fetch(`/api/materiales/${id}`, { method: 'DELETE' }); if(res.ok) { buscarMateriales(); cargarDropdownGabinetes(); } else { const txt = await res.text(); alert(txt); } } catch(e){ alert("Error"); } }
+    async function guardarMaterialNuevo() { const nombre = document.getElementById('nm_nombre').value; const marca = document.getElementById('nm_marca').value; const codigo = document.getElementById('nm_codigo').value; const valor_int = document.getElementById('nm_valor_int').value; const valor_normal = document.getElementById('nm_valor_normal').value; const unidad = document.getElementById('nm_unidad').value; if(!nombre || !valor_int) return alert("Falta Nombre o Precio"); try { const res = await fetch('/api/materiales/nuevo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, marca, codigo, unidad, valor_int, valor_normal }) }); if(res.ok) { bootstrap.Modal.getInstance(document.getElementById('modalNuevoMaterial')).hide(); document.getElementById('formNuevoMaterial').reset(); buscarMateriales(); alert("Guardado"); } else alert("Error"); } catch (e) { alert("Error"); } }
+    async function cargarHistorial() { const res = await fetch('/api/historial'); proyectosHistorial = await res.json(); const tbody = document.getElementById('tabla-historial'); tbody.innerHTML = ''; proyectosHistorial.forEach(p => { tbody.innerHTML += `<tr class="historial-row"><td onclick="cargarDesdeId(${p.id})">${p.id}</td><td onclick="cargarDesdeId(${p.id})" class="fw-bold text-primary" style="cursor:pointer">${p.nombre_proyecto}</td><td onclick="cargarDesdeId(${p.id})">${p.cliente}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary me-1" onclick="cargarDesdeId(${p.id})"><i class="fas fa-folder-open"></i></button><button class="btn btn-sm btn-outline-danger" onclick="eliminarCotizacion(${p.id})"><i class="fas fa-trash-alt"></i></button></td></tr>`; }); }
+    function cargarDesdeId(id) { const p = proyectosHistorial.find(x => x.id === id); if(p) cargarProyectoExistente(p); }
+    async function eliminarCotizacion(id) { if(confirm("¿Eliminar cotización?")) { await fetch(`/api/cotizaciones/${id}`, {method:'DELETE'}); if(cotizacionIdActual===id) location.reload(); else cargarHistorial(); } }
+    async function crearProyecto() { const nombre = document.getElementById('nombreProyecto').value; if(!nombre) return alert("Falta nombre"); const body = { nombre_proyecto: nombre, cliente: document.getElementById('cliente').value, valor_dia_mo: document.getElementById('valorDia').value, dias_trabajados: document.getElementById('diasTrab').value, cantidad_personas: document.getElementById('cantPersonas').value, margen_general: document.getElementById('margenGeneral').value }; const res = await fetch('/api/cotizaciones', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) }); const data = await res.json(); body.id = data.id; cargarProyectoExistente(body); cargarHistorial(); }
 </script>
-
-
-
-
 </body>
 </html>
